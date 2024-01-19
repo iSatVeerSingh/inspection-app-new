@@ -75,7 +75,6 @@ const Dashboard = () => {
                   color={item.path === "/" + currentPath ? "white" : "text.700"}
                   fontSize={"lg"}
                 >
-                  <item.icon boxSize={6} />
                   <Text as="span">{item.name}</Text>
                 </Flex>
               </Link>

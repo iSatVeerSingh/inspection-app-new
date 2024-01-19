@@ -1,3 +1,30 @@
 body {
   background-color: #f0f0f6;
 }
+
+.editor-input {
+  border-top: 1px solid gray;
+  min-height: 200px;
+  outline: none;
+  padding: 5px;
+}
+
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-text-underlineStrikethrough {
+  text-decoration: underline line-through;
+}

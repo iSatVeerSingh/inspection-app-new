@@ -12,9 +12,11 @@ export const PREVIOUS_ITEM_PREVIEW = ADD_PREVIOUS_JOB_ITEMS + "/:id";
 export const REPORT_PREVIEW = JOB_DETAILS + "/preview";
 
 // Library items
-export const LIBRARY_ITEMS = "/library-items";
+export const LIBRARY_ITEMS = "/items";
 export const LIBRARY_ITEM = LIBRARY_ITEMS + "/:id";
 export const NEW_ITEM = LIBRARY_ITEMS + "/new";
+
+export const CATEGORIES = "/categories";
 
 // Inspection Notes
 export const INSPECTION_NOTES = "/inspection-notes";

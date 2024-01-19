@@ -11,7 +11,9 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        return User::where('active', true)->get();
+        return User::where('active', true)
+            ->orderBy('updated_at', 'desc')
+            ->get();
     }
 
 

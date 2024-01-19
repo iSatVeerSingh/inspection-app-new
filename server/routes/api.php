@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemCategoryController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,4 +23,5 @@ use Illuminate\Support\Facades\Route;
 // });
 Route::post('/login', [AuthController::class, 'login']);
 Route::apiResource('/users', UserController::class)->except(['show']);
-Route::apiResource('/categories', ItemCategoryController::class)->except(['show']);
+Route::apiResource('/item-categories', ItemCategoryController::class);
+Route::apiResource('/items', ItemController::class);

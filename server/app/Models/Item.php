@@ -6,15 +6,20 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ItemCategory extends Model
+class Item extends Model
 {
     use HasFactory, HasUuids;
 
     protected $fillable = [
         'active',
-        'name'
+        'category_id',
+        'name',
+        'summary',
+        'openingParagraph',
+        'closingParagraph',
+        'embeddedImage'
     ];
 
     protected $casts = [
@@ -27,12 +32,12 @@ class ItemCategory extends Model
     }
 
     /**
-     * Get all of the items for the ItemCategory
+     * Get the category that owns the Item
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function items(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Item::class, 'category_id');
+        return $this->belongsTo(ItemCategory::class, 'category_id');
     }
 }

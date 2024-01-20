@@ -2,28 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\FullItemResource;
 use App\Http\Resources\ItemCollection;
+use App\Http\Resources\ItemResource;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        // $query = Item::query();
+        $items = Item::where('active', true);
 
-        // if ($request->has('category_id')) {
-        //     $query->where('category_id', $request->input('category_id'));
-        //     return $query->get();
-        // }
+        if ($request->has('category_id')) {
+            $items->where('category_id', $request->category_id);
+        }
+        if ($request->has('keyword')) {
+            $keyword = $request->input('keyword');
+            $items->where('name', 'like', '%' . $keyword . '%')
+                ->orWhere('summary', 'like', '%' . $keyword . '%');
+        }
 
-        return new ItemCollection(Item::where('active', true)->paginate());
+        return new ItemCollection($items->orderBy('updated_at', 'desc')->simplePaginate());
     }
 
     public function show(Request $request, Item $item)
     {
-        return $item;
+        if (Auth::user()['role'] === "Inspector") {
+            return new ItemResource($item);
+        }
+
+        return new FullItemResource($item);
     }
 
     public function store(Request $request)
@@ -34,7 +45,8 @@ class ItemController extends Controller
             'summary' => 'sometimes',
             'embeddedImage' => 'sometimes',
             'openingParagraph' => 'required',
-            'closingParagraph' => 'required'
+            'closingParagraph' => 'required',
+            'height' => 'required'
         ]);
 
         $item = new Item($validated);
@@ -54,7 +66,8 @@ class ItemController extends Controller
             'summary' => 'sometimes',
             'embeddedImage' => 'sometimes',
             'openingParagraph' => 'sometimes',
-            'closingParagraph' => 'sometimes'
+            'closingParagraph' => 'sometimes',
+            'height' => 'sometimes',
         ]);
 
         $item->update($validated);

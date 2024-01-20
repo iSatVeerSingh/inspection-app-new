@@ -16,10 +16,11 @@ return new class extends Migration
             $table->boolean('active')->default(true)->index();
             $table->foreignUuid('category_id')->constrained('item_categories');
             $table->string('name')->index();
-            $table->string('summary')->nullable();
+            $table->text('summary')->nullable();
             $table->text('openingParagraph');
             $table->text('closingParagraph');
             $table->longText('embeddedImage')->nullable();
+            $table->integer('height', false, true)->default(0);
             $table->timestamps();
         });
     }

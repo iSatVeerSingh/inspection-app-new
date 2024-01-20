@@ -10,6 +10,10 @@ class ItemCategoryController extends Controller
 {
     public function index(Request $request)
     {
+        if ($request->has('nameonly')) {
+            return ItemCategory::where('active', true)->select('id', 'name')->get();
+        }
+
         return ItemCategory::where("active", true)
             ->withCount(['items as items'])
             ->orderBy('updated_at', 'desc')->get();

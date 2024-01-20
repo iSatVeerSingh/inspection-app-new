@@ -28,3 +28,10 @@ body {
 .editor-text-underlineStrikethrough {
   text-decoration: underline line-through;
 }
+
+input::file-selector-button {
+  height: 100%;
+  border: none;
+  border-right: 1px solid gray;
+  cursor: pointer;
+}

@@ -51,9 +51,7 @@ const Categories = () => {
   const toast = useToast();
 
   const getCategories = async () => {
-    const { success, data, error } = await inspectionApi.get(
-      "/item-categories"
-    );
+    const { success, data } = await inspectionApi.get("/item-categories");
     if (!success) {
       setLoading(false);
       return;

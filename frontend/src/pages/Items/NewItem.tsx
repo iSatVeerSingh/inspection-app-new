@@ -21,7 +21,7 @@ const NewItem = () => {
         // console.log(myhtml);
         const paraser = new DOMParser();
         const dom = paraser.parseFromString(
-          `<p dir="ltr"><span style="white-space: pre-wrap;">Internally, Lexical maintains the state of a given editor in memory, updating it in response to user inputs. Sometimes, it's useful t</span><b><strong class="editor-text-bold" style="white-space: pre-wrap;">o convert </strong></b><span style="white-space: pre-wrap;">this state into a serialized format in order to transfer it between editors or store it for retrieval at some later time. In order to make</span><i><em class="editor-text-italic" style="white-space: pre-wrap;"> this process easier, Lexical provides some APIs that allow Nodes to specify how they should be represented in common serialized for</em></i><span style="white-space: pre-wrap;">mats.</span></p>
+          `<p><span>The relevant Australian Standard AS 2870 Residential Slabs and Footings states in section 6.4.6 Fixing of reinforcement and void formers that</span><span><i><b>‘Reinforcement and void formers shall be fixed in position prior to concreting by means of proprietary spacers, bar chairs with bases, ligatures or other appropriate fixings so as to achieve the required reinforcement position and concrete cover’</b></i></span><span>. Additionally, section 5.3.2 Reinforcement that</span><span><i><b>‘The slab mesh shall be placed towards the top of the raft or slab’</b></i></span><span>.</span></p><p><span>These bar chairs must be properly installed prior to any concrete being poured.</span></p>
         `,
           "text/html"
         );
@@ -29,8 +29,8 @@ const NewItem = () => {
         const nodes = $generateNodesFromDOM(editorRef.current!, dom);
         // $getRoot().select();
         // editorRef.current?.setEditorState(nodes);
-        $insertNodes(nodes)
-        console.log(nodes) 
+        $insertNodes(nodes);
+        console.log(nodes);
       });
     }
   };

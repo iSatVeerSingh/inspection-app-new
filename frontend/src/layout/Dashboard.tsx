@@ -9,6 +9,7 @@ import {
 import { GlobalContext } from "../context/GlobalContext";
 import { Avatar, Box, Flex, Grid, Text } from "@chakra-ui/react";
 import menuitems from "../router/menuitems";
+import { useEffect } from "react";
 
 export const dashboardLoader: LoaderFunction = ({ request }) => {
   try {
@@ -33,6 +34,16 @@ const Dashboard = () => {
   const user: any = useLoaderData();
   const { pathname } = useLocation();
   const currentPath = pathname.split("/")[1];
+
+  // useEffect(()=> {
+  //   window.addEventListener('online', ()=> {
+  //     console.log('system is online')
+  //   })
+
+  //   return () => {
+  //     window.removeEventListener("online");
+  //   }
+  // }, [])
 
   return (
     <GlobalContext.Provider value={{ user }}>

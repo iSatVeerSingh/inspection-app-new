@@ -22,5 +22,6 @@ export default extendTheme({
   },
   borders: {
     stroke: "1px solid #C2C6CE",
+    filter: "1px solid #5C59E8"
   },
 });

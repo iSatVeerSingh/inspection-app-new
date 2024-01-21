@@ -37,4 +37,14 @@ class JobCategory extends Model
     {
         return $this->hasMany(Note::class, 'category_id');
     }
+
+    /**
+     * Get all of the jobs for the JobCategory
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(Job::class, 'category_id');
+    }
 }

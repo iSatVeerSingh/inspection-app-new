@@ -200,3 +200,78 @@ export const MoreIcon = (props: IconProps) => {
     </Icon>
   );
 };
+
+export const LinkIcon = (props: IconProps) => {
+  return (
+    <Icon fill="currentColor" viewBox="0 0 16 16" {...props}>
+      <path d="M6.354 5.5H4a3 3 0 000 6h3a3 3 0 002.83-4H9c-.086 0-.17.01-.25.031A2 2 0 017 10.5H4a2 2 0 110-4h1.535c.218-.376.495-.714.82-1z"></path>
+      <path d="M9 5.5a3 3 0 00-2.83 4h1.098A2 2 0 019 6.5h3a2 2 0 110 4h-1.535a4.02 4.02 0 01-.82 1H12a3 3 0 100-6H9z"></path>
+    </Icon>
+  );
+};
+
+export const LeftAlignIcon = (props: IconProps) => {
+  return (
+    <Icon
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <path d="M17 10L3 10"></path>
+      <path d="M21 6L3 6"></path>
+      <path d="M21 14L3 14"></path>
+      <path d="M17 18L3 18"></path>
+    </Icon>
+  );
+};
+export const RightAlignIcon = (props: IconProps) => {
+  return (
+    <Icon
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <path d="M21 10L7 10"></path>
+      <path d="M21 6L3 6"></path>
+      <path d="M21 14L3 14"></path>
+      <path d="M21 18L7 18"></path>
+    </Icon>
+  );
+};
+export const JustifyIcon = (props: IconProps) => {
+  return (
+    <Icon
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <path d="M21 10L3 10"></path>
+      <path d="M21 6L3 6"></path>
+      <path d="M21 14L3 14"></path>
+      <path d="M21 18L3 18"></path>
+    </Icon>
+  );
+};
+
+export const PencilIcon = (props: IconProps) => {
+  return (
+    <Icon viewBox="0 0 64 64" fill="currentcolor" {...props}>
+      <path d="M55.736 13.636l-4.368-4.362a2.308 2.308 0 00-1.636-.677c-.592 0-1.184.225-1.635.676l-3.494 3.484 7.639 7.626 3.494-3.483a2.305 2.305 0 000-3.264z"></path>
+      <path d="M21.922 35.396L29.562 43.023 50.607 22.017 42.967 14.39z"></path>
+      <path d="M20.273 37.028L18.642 46.28 27.913 44.654z"></path>
+      <path d="M41.393 50.403H12.587V21.597h20.329l5.01-5H10.82a3.243 3.243 0 00-3.234 3.234V52.17a3.243 3.243 0 003.234 3.234h32.339a3.243 3.243 0 003.234-3.234V29.049l-5 4.991v16.363z"></path>
+    </Icon>
+  );
+};

@@ -93,11 +93,19 @@ const AllItems = () => {
     setSearchValue("");
   };
 
+  const titleBtn = () => {
+    if (user.role === "Inspector") {
+      console.log("sugge");
+    } else {
+      navigate("./new", { state: { categories } });
+    }
+  };
+
   return (
     <PageLayout
       title="Library Items"
-      btn="Create Item"
-      onClick={() => navigate("./new")}
+      btn={user.role === "Inspector" ? "Suggest Item" : "Create Item"}
+      onClick={titleBtn}
       isRoot
     >
       <Flex gap={3} mb={3} alignItems={"center"}>

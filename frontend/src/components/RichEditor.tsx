@@ -1,77 +1,45 @@
-import {
-  Box,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  IconButton,
-  Text,
-} from "@chakra-ui/react";
-import {
-  LexicalComposer,
-  InitialConfigType,
-} from "@lexical/react/LexicalComposer";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { LinkNode } from "@lexical/link";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import ToolbarPlugin from "./ToolbarPlugin";
+import { forwardRef } from "react";
+import {
+  Box,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Text,
+} from "@chakra-ui/react";
 import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin";
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
-import { $getSelection, $isRangeSelection, FORMAT_TEXT_COMMAND } from "lexical";
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "../icons";
-import { forwardRef, useCallback, useEffect, useState } from "react";
 
-const ToolbarPlugin = () => {
-  const [editor] = useLexicalComposerContext();
-  const [isBold, setIsBold] = useState(false);
-  const [isItalic, setIsItalic] = useState(false);
-  const [isUnderline, setIsUnderline] = useState(false);
-
-  const updateToolbar = useCallback(() => {
-    const selection = $getSelection();
-    if ($isRangeSelection(selection)) {
-      setIsBold(selection.hasFormat("bold"));
-      setIsItalic(selection.hasFormat("italic"));
-      setIsUnderline(selection.hasFormat("underline"));
-    }
-  }, [editor]);
-
-  useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        updateToolbar();
-      });
-    });
-  }, [editor, updateToolbar]);
-
-  return (
-    <Flex gap={1}>
-      <IconButton
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")}
-        icon={<BoldIcon />}
-        aria-label="Bold"
-        size="sm"
-        borderRadius="none"
-        isActive={isBold}
-      />
-      <IconButton
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")}
-        icon={<ItalicIcon />}
-        aria-label="Italic"
-        size="sm"
-        borderRadius="none"
-        isActive={isItalic}
-      />
-      <IconButton
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline")}
-        icon={<UnderlineIcon />}
-        aria-label="Underline"
-        size="sm"
-        isActive={isUnderline}
-        borderRadius="none"
-      />
-    </Flex>
-  );
+const editorConfig = {
+  namespace: "ItemEditor",
+  // The editor theme
+  theme: {
+    placeholder: "editor-placeholder",
+    paragraph: "editor-paragraph",
+    link: "editor-link",
+    text: {
+      bold: "editor-text-bold",
+      italic: "editor-text-italic",
+      overflowed: "editor-text-overflowed",
+      hashtag: "editor-text-hashtag",
+      underline: "editor-text-underline",
+      strikethrough: "editor-text-strikethrough",
+      underlineStrikethrough: "editor-text-underlineStrikethrough",
+      code: "editor-text-code",
+    },
+  },
+  // Handling of errors during update
+  onError(error: any) {
+    console.log(error);
+  },
+  // Any custom nodes go here
+  nodes: [LinkNode],
 };
 
 type EditorProps = {
@@ -80,22 +48,6 @@ type EditorProps = {
 };
 
 const RichEditor = ({ label, inputError }: EditorProps, ref: any) => {
-  const editorConfig: InitialConfigType = {
-    namespace: "LibraryEditor",
-    theme: {
-      text: {
-        bold: "editor-text-bold",
-        italic: "editor-text-italic",
-        underline: "editor-text-underline",
-        strikethrough: "editor-text-strikethrough",
-        underlineStrikethrough: "editor-text-underlineStrikethrough",
-      },
-    },
-    onError: (error: Error) => {
-      console.log(error);
-    },
-  };
-
   return (
     <FormControl isInvalid={inputError !== undefined && inputError !== ""}>
       {label && (
@@ -106,7 +58,6 @@ const RichEditor = ({ label, inputError }: EditorProps, ref: any) => {
       <LexicalComposer initialConfig={editorConfig}>
         <Box
           borderRadius={"xl"}
-          bg={"card-bg-secondary"}
           overflow={"hidden"}
           shadow={"xs"}
           border={"1px"}
@@ -124,11 +75,11 @@ const RichEditor = ({ label, inputError }: EditorProps, ref: any) => {
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
+            <LinkPlugin />
+            <ClearEditorPlugin />
+            <EditorRefPlugin editorRef={ref} />
           </Box>
         </Box>
-        {/* <OnChangePlugin onChange={onChange} /> */}
-        <ClearEditorPlugin />
-        <EditorRefPlugin editorRef={ref} />
       </LexicalComposer>
       {inputError && <FormErrorMessage mt="0">{inputError}</FormErrorMessage>}
     </FormControl>

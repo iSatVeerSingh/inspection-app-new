@@ -1,7 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard, { dashboardLoader } from "../layout/Dashboard";
-import { CATEGORIES, LIBRARY_ITEM, LIBRARY_ITEMS, NEW_ITEM, USERS } from "./paths";
+import {
+  CATEGORIES,
+  LIBRARY_ITEM,
+  LIBRARY_ITEMS,
+  NEW_ITEM,
+  USERS,
+} from "./paths";
 import Users from "../pages/Users";
 import AllItems from "../pages/Items/AllItems";
 import NewItem from "../pages/Items/NewItem";
@@ -20,17 +26,17 @@ export default createBrowserRouter([
       },
       {
         path: LIBRARY_ITEM,
-        element: <Item />
+        element: <Item />,
       },
       {
         path: CATEGORIES,
-        element: <Categories />
+        element: <Categories />,
       },
       {
         path: USERS,
         element: <Users />,
       },
-      
+
       {
         path: NEW_ITEM,
         element: <NewItem />,

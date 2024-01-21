@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Item as ItemType } from "../../types";
 import inspectionApi from "../../api/inspectionApi";
 import Loading from "../../components/Loading";
-import { Box, Flex, Grid, Image, Text } from "@chakra-ui/react";
+import { Flex, Grid, Image, Text } from "@chakra-ui/react";
 import DataNotFound from "../../components/DataNotFound";
 import { useGlobalContext } from "../../context/GlobalContext";
 import ItemForm from "./ItemForm";
@@ -16,12 +16,15 @@ const Item = () => {
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState<ItemType | null>(null);
 
+  let categories;
   const { user } = useGlobalContext();
-  const { categories } = state;
+  if (user.role !== "Inspector") {
+    categories = state.categories;
+  }
 
   useEffect(() => {
     (async () => {
-      const { success, data, error } = await inspectionApi.get(`/items/${id}`);
+      const { success, data } = await inspectionApi.get(`/items/${id}`);
       if (!success) {
         setLoading(false);
         return;
@@ -30,10 +33,6 @@ const Item = () => {
       setLoading(false);
     })();
   }, []);
-
-  const getDom = (str: string) => {
-    return <Box dangerouslySetInnerHTML={{ __html: str }} />;
-  };
 
   return (
     <PageLayout title="Library Item">
@@ -89,7 +88,10 @@ const Item = () => {
                       <Text fontSize={"lg"} w={"150px"}>
                         Embedded Image
                       </Text>
-                      <Image src={item.embeddedImage} width={"300px"} />
+                      <Image
+                        src={item.embeddedImage as string}
+                        width={"300px"}
+                      />
                     </Flex>
                   )}
                 </Grid>

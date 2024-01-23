@@ -5,6 +5,7 @@ use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,7 +37,9 @@ Route::apiResource('/users', UserController::class)->except(['show']);
 Route::apiResource('/job-categories', JobCategoryController::class)->except(['show']);
 Route::apiResource('/item-categories', ItemCategoryController::class)->except(['show']);
 Route::apiResource('/items', ItemController::class);
+Route::apiResource('/recommendations', RecommendationController::class)->except(['show']);
 
 Route::get('/install-items', [ItemController::class, 'install']);
+Route::get('/install-recommendations', [RecommendationController::class, 'install']);
 
 Route::post('/suggest-note', [NoteController::class, 'suggestNote']);

@@ -23,7 +23,7 @@ class ItemSeeder extends Seeder
 
         $uniqueCategories = array_unique($allCategories);
 
-        foreach ($uniqueCategories as $key => $category) {
+        foreach ($uniqueCategories as $category) {
             $itemCategory = new ItemCategory([
                 "name" => trim($category)
             ]);
@@ -31,7 +31,7 @@ class ItemSeeder extends Seeder
             $itemCategory->save();
         }
 
-        foreach ($allitems as $key => $item) {
+        foreach ($allitems as $item) {
 
             $category = ItemCategory::where('name', $item['category'])->first();
 
@@ -45,7 +45,9 @@ class ItemSeeder extends Seeder
 
 
             if (array_key_exists('embeddedImage', $item)) {
-                $libItem['embeddedImage'] = $item['embeddedImage'];
+                $libItem['embeddedImages'] = [
+                    $item['embeddedImage']
+                ];
             }
 
             $libItem->save();

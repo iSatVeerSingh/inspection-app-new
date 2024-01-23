@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\FullItemResource;
+use App\Http\Resources\InspectorItemSummaryResource;
 use App\Http\Resources\ItemCollection;
 use App\Http\Resources\ItemResource;
 use App\Models\Item;
@@ -30,10 +31,6 @@ class ItemController extends Controller
 
     public function show(Request $request, Item $item)
     {
-        if (Auth::user()['role'] === "Inspector") {
-            return new ItemResource($item);
-        }
-
         return new FullItemResource($item);
     }
 
@@ -41,11 +38,12 @@ class ItemController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:item_categories,id',
-            'name' => "required|max:255",
-            'summary' => 'sometimes',
-            'embeddedImage' => 'sometimes',
+            'name' => "required|unique:items,name|max:255",
+            'summary' => 'required',
             'openingParagraph' => 'required',
             'closingParagraph' => 'required',
+            'embeddedImages' => 'sometimes',
+            'embeddedImagePlace' => 'sometimes',
             'height' => 'required'
         ]);
 
@@ -61,13 +59,14 @@ class ItemController extends Controller
         }
 
         $validated = $request->validate([
-            'category_id' => 'sometimes|required|exists:item_categories,id',
-            'name' => "sometimes|max:255",
+            'category_id' => 'sometimes|exists:item_categories,id',
+            'name' => "sometimes|unique:items,name|max:255",
             'summary' => 'sometimes',
-            'embeddedImage' => 'sometimes',
             'openingParagraph' => 'sometimes',
             'closingParagraph' => 'sometimes',
-            'height' => 'sometimes',
+            'embeddedImages' => 'sometimes',
+            'embeddedImagePlace' => 'sometimes',
+            'height' => 'sometimes'
         ]);
 
         $item->update($validated);
@@ -88,7 +87,7 @@ class ItemController extends Controller
     {
         $items = Item::where('active', true)->get();
 
-        $itemCollection = new ItemCollection($items);
+        $itemCollection = InspectorItemSummaryResource::collection($items);
         $content = $itemCollection->toJson();
         $contentLength = strlen($content);
         return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);

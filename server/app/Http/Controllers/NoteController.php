@@ -3,15 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\NoteCollection;
+use App\Mail\NoteSuggestion;
 use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class NoteController extends Controller
 {
     public function index(Request $request)
     {
-        return Note::where('active', true)->get();
+        $notes = Note::where('active', true);
+
+        if ($request->has('category_id')) {
+            $notes->where('category_id', $request->category_id);
+        }
+
+        return $notes->orderBy('updated_at', 'desc')->get();
     }
 
     public function store(Request $request)
@@ -58,5 +67,23 @@ class NoteController extends Controller
         $content = $noteCollection->toJson();
         $contentLength = strlen($content);
         return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
+    }
+
+    public function suggestNote(Request $request)
+    {
+        $validated = $request->validate([
+            'category' => 'required',
+            'text' => 'required'
+        ]);
+
+        // $user = Auth::user();
+
+        $sentmail = Mail::to('mail.satveer@gmail.com')->send(new NoteSuggestion($validated['category'], $validated['text'], "Demo User"));
+
+        if (!$sentmail) {
+            return response()->json(['message' => 'Couln\'t send suggestion. Something went wrong'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json(['message' => 'Suggestion sent successfully']);
     }
 }

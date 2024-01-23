@@ -36,7 +36,7 @@ class SyncJobs extends Command
         $password = env('SERVICEM8_PASSWORD');
 
 
-        $time = new DateTime("-15 minutes");
+        $time = new DateTime("-16 minutes");
         $lastUpdated = $time->format('Y-m-d H:i:00');
 
         $jobsResponse = Http::withBasicAuth($username, $password)

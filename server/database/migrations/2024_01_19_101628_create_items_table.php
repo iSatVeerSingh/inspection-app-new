@@ -19,7 +19,8 @@ return new class extends Migration
             $table->text('summary')->nullable();
             $table->text('openingParagraph');
             $table->text('closingParagraph');
-            $table->longText('embeddedImage')->nullable();
+            $table->json('embeddedImages')->nullable();
+            $table->enum('embeddedImagePlace', ['Before Item Images', 'Before Closing Paragraph', 'After Closing Paragraph'])->default('Before Closing Paragraph');
             $table->integer('height', false, true)->default(0);
             $table->timestamps();
         });

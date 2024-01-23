@@ -26,14 +26,17 @@ use Illuminate\Support\Facades\Route;
 
 // Route::post('/login', [AuthController::class, 'login']);
 // Route::middleware('auth:sanctum')->group(function () {
-//   Route::apiResource('/item-categories', ItemCategoryController::class);
-//   Route::apiResource('/items', ItemController::class);
 //   Route::apiResource('/notes', NoteController::class)->except(['show']);
 // });
 
-// Route::get('/install-items', [ItemController::class, 'install']);
 // Route::get('/install-categories', [ItemCategoryController::class, 'install']);
 // Route::get('/install-notes', [NoteController::class, 'install']);
 
 Route::apiResource('/users', UserController::class)->except(['show']);
 Route::apiResource('/job-categories', JobCategoryController::class)->except(['show']);
+Route::apiResource('/item-categories', ItemCategoryController::class)->except(['show']);
+Route::apiResource('/items', ItemController::class);
+
+Route::get('/install-items', [ItemController::class, 'install']);
+
+Route::post('/suggest-note', [NoteController::class, 'suggestNote']);

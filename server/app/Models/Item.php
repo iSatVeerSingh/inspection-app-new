@@ -19,11 +19,14 @@ class Item extends Model
         'summary',
         'openingParagraph',
         'closingParagraph',
-        'embeddedImage'
+        'embeddedImages',
+        'embeddedImagePlace',
+        'height',
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'embeddedImages' => 'array'
     ];
 
     protected function serializeDate(DateTimeInterface $date)

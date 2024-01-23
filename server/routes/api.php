@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->group(function () {
 //   Route::apiResource('/item-categories', ItemCategoryController::class);
 //   Route::apiResource('/items', ItemController::class);
-//   Route::apiResource('/job-categories', JobCategoryController::class)->except(['show']);
 //   Route::apiResource('/notes', NoteController::class)->except(['show']);
 // });
 
@@ -37,3 +36,4 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/install-notes', [NoteController::class, 'install']);
 
 Route::apiResource('/users', UserController::class)->except(['show']);
+Route::apiResource('/job-categories', JobCategoryController::class)->except(['show']);

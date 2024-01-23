@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JobCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 
 class JobCategoryController extends Controller
 {
@@ -21,7 +22,23 @@ class JobCategoryController extends Controller
             'stageOfWorks' => 'required|max:255'
         ]);
 
+        $servicem8Url = env('SERVICEM8_BASEURL');
+        $username = env('SERVICEM8_EMAIL');
+        $password = env('SERVICEM8_PASSWORD');
+
+        $response = Http::withBasicAuth($username, $password)->post($servicem8Url . "/category.json", [
+            'name' => $validated['name'],
+        ]);
+
+        $resStatus = $response->status();
+        if ($resStatus !== 200) {
+            return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
+        }
+
+        $serviceUUID = $response->header('x-record-uuid');
+
         $jobCategory = new JobCategory($validated);
+        $jobCategory['id'] = $serviceUUID;
         $jobCategory->save();
 
         return response()->json(['message' => 'Job category created successfully'], Response::HTTP_CREATED);
@@ -33,6 +50,8 @@ class JobCategoryController extends Controller
             return response()->json(['message' => 'Job category does not exist'], Response::HTTP_NOT_FOUND);
         }
 
+        $oldName = $jobCategory['name'];
+
         $validated = $request->validate([
             'name' => 'sometimes|required|max:255|unique:job_categories,name',
             'type' => 'sometimes|required|max:255|unique:job_categories,type',
@@ -40,6 +59,22 @@ class JobCategoryController extends Controller
         ]);
 
         $jobCategory->update($validated);
+
+        $servicem8Url = env('SERVICEM8_BASEURL');
+        $username = env('SERVICEM8_EMAIL');
+        $password = env('SERVICEM8_PASSWORD');
+
+        if ($oldName !== $jobCategory['name']) {
+            $response = Http::withBasicAuth($username, $password)->post($servicem8Url . "/category/" . $jobCategory['id'] . '.json', [
+                'name' => $jobCategory['name']
+            ]);
+            $resStatus = $response->status();
+            if ($resStatus !== 200) {
+                return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+
         return response()->json(['message' => 'Job category updated successfully']);
     }
 
@@ -52,6 +87,17 @@ class JobCategoryController extends Controller
         $count = $jobCategory->notes()->count();
         if ($count !== 0) {
             return response()->json(['message' => "Job Category is not empty"]);
+        }
+
+        $servicem8Url = env('SERVICEM8_BASEURL');
+        $username = env('SERVICEM8_EMAIL');
+        $password = env('SERVICEM8_PASSWORD');
+
+        $response = Http::withBasicAuth($username, $password)->delete($servicem8Url . "/category/" . $jobCategory['id'] . '.json');
+
+        $resStatus = $response->status();
+        if ($resStatus !== 200) {
+            return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
         }
 
         $jobCategory->update(['active' => false]);

@@ -58,4 +58,13 @@ class ItemCategoryController extends Controller
         $itemCategory->update(['active' => false]);
         return response()->json(['message' => "Category deleted successfully"]);
     }
+
+    public function install(Request $request)
+    {
+        $categories = ItemCategory::where('active', true)->select('id', 'name')->get();
+
+        $content = $categories->toJson();
+        $contentLength = strlen($content);
+        return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
+    }
 }

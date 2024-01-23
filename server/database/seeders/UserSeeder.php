@@ -19,6 +19,7 @@ class UserSeeder extends Seeder
         $username = env('SERVICEM8_EMAIL');
         $password = env('SERVICEM8_PASSWORD');
 
+
         $staffMembers = Http::withBasicAuth($username, $password)
             ->get($servicem8Url . "/staff.json?%24filter=active%20eq%20'1'")
             ->json();
@@ -39,7 +40,8 @@ class UserSeeder extends Seeder
             if ($role !== "") {
                 $user = new User();
                 $user['id'] = $staff['uuid'];
-                $user['name'] = trim($staff['first'] . " " . $staff['last']);
+                $user['first'] = trim($staff['first']);
+                $user['last'] = trim($staff['last']);
                 $user['email'] = $staff['email'];
                 if ($staff['mobile'] !== "") {
                     $user['phone'] = $staff['mobile'];

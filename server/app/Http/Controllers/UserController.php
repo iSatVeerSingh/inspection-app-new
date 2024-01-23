@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class UserController extends Controller
 {
@@ -20,14 +21,41 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:255',
+            'first' => 'required|max:255',
+            'last' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'phone' => 'sometimes|required|max:15|unique:users,phone',
             'role' => 'required|in:Inspector,Admin,Owner',
             'password' => 'required'
         ]);
 
+        // Get staff memebers from servicem8 and create users
+        $servicem8Url = env('SERVICEM8_BASEURL');
+        $username = env('SERVICEM8_EMAIL');
+        $password = env('SERVICEM8_PASSWORD');
+
+        $body = [
+            'first' => $validated['first'],
+            'last' => $validated['last'],
+            'email' => $validated['email'],
+            'job_title' => $validated['role']
+        ];
+
+        if (array_key_exists('phone', $validated)) {
+            $body['mobile'] = $validated['phone'];
+        }
+
+
+        $response = Http::withBasicAuth($username, $password)->post($servicem8Url . '/staff.json', $body);
+        $resStatus = $response->status();
+        if ($resStatus !== 200) {
+            return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
+        }
+
+        $serviceUUID = $response->header('x-record-uuid');
+
         $user = new User($validated);
+        $user['id'] = $serviceUUID;
         $user->save();
 
         return response()->json(['message' => 'User created successfully'], Response::HTTP_CREATED);
@@ -38,9 +66,11 @@ class UserController extends Controller
         if ($user['active'] === false) {
             return response()->json(['message' => 'User does not exist'], Response::HTTP_NOT_FOUND);
         }
+        // Get staff memebers from servicem8 and create users
 
         $validated = $request->validate([
-            'name' => 'sometimes|required|max:255',
+            'first' => 'sometimes|required|max:255',
+            'last' => 'sometimes|required|max:255',
             'email' => 'sometimes|required|email|max:255|unique:users,email',
             'phone' => 'sometimes|max:15|unique:users,phone',
             'role' => 'sometimes|in:Inspector,Admin,Owner',
@@ -48,6 +78,29 @@ class UserController extends Controller
         ]);
 
         $user->update($validated);
+
+        $servicem8Url = env('SERVICEM8_BASEURL');
+        $username = env('SERVICEM8_EMAIL');
+        $password = env('SERVICEM8_PASSWORD');
+
+        $body = [
+            'first' => $user['first'],
+            'last' => $user['last'],
+            'email' => $user['email'],
+            'job_title' => $user['role'],
+        ];
+
+        if ($user['phone'] !== null) {
+            $body['mobile'] = $user['phone'];
+        }
+
+        $response = Http::withBasicAuth($username, $password)->post($servicem8Url . "/staff/" . $user['id'] . '.json', $body);
+        $resStatus = $response->status();
+        if ($resStatus !== 200) {
+            return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
+        }
+
+
         return response()->json(['message' => 'User updated successfully']);
     }
 
@@ -61,6 +114,16 @@ class UserController extends Controller
             return response()->json(['message' => 'Owner can not be deleted'], Response::HTTP_BAD_REQUEST);
         }
 
+        $servicem8Url = env('SERVICEM8_BASEURL');
+        $username = env('SERVICEM8_EMAIL');
+        $password = env('SERVICEM8_PASSWORD');
+
+        $response = Http::withBasicAuth($username, $password)->delete($servicem8Url . "/staff/" . $user['id'] . '.json');
+
+        $resStatus = $response->status();
+        if ($resStatus !== 200) {
+            return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
+        }
         $user->update(['active' => false]);
         return response()->json(['message' => 'User deleted successfully']);
     }

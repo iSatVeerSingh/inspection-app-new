@@ -83,4 +83,14 @@ class ItemController extends Controller
         $item->update(['active' => false]);
         return response()->json(['message' => 'Item deleted successfully']);
     }
+
+    public function install(Request $request)
+    {
+        $items = Item::where('active', true)->get();
+
+        $itemCollection = new ItemCollection($items);
+        $content = $itemCollection->toJson();
+        $contentLength = strlen($content);
+        return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
+    }
 }

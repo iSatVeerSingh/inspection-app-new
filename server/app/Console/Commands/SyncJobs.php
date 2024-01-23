@@ -48,7 +48,7 @@ class SyncJobs extends Command
         }
 
         $allJobs = array_filter($jobsResponse, function ($job) {
-            return $job['status'] === "Work Order";
+            return $job['status'] === "Work Order" || $job['status'] === "Completed";
         });
 
         // check if the job exists or not
@@ -83,6 +83,9 @@ class SyncJobs extends Command
                             $job['inspector_id'] = $inspector['id'];
                         }
                         $job['startsAt'] = new DateTime($activities[0]["start_date"]);
+                        if ($serviceJob['status'] === "Completed" && $job['status'] !== "Completed") {
+                            $job['status'] = "Completed";
+                        }
                         $job->save();
                     }
                 }

@@ -55,4 +55,14 @@ class Job extends Model
     {
         return $this->belongsTo(JobCategory::class, 'category_id');
     }
+
+    /**
+     * Get the inspector that owns the Job
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function inspector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'inspector_id');
+    }
 }

@@ -19,7 +19,6 @@ class UserSeeder extends Seeder
         $username = env('SERVICEM8_EMAIL');
         $password = env('SERVICEM8_PASSWORD');
 
-
         $staffMembers = Http::withBasicAuth($username, $password)
             ->get($servicem8Url . "/staff.json?%24filter=active%20eq%20'1'")
             ->json();

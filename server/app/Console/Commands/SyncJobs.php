@@ -36,8 +36,8 @@ class SyncJobs extends Command
         $password = env('SERVICEM8_PASSWORD');
 
 
-        $time = new DateTime("-1 day");
-        $lastUpdated = $time->format('Y-m-d h:i:00');
+        $time = new DateTime("-15 minutes");
+        $lastUpdated = $time->format('Y-m-d H:i:00');
 
         $jobsResponse = Http::withBasicAuth($username, $password)
             ->get($servicem8Url . "/job.json?%24filter=edit_date%20gt%20'" . $lastUpdated . "'")
@@ -119,23 +119,41 @@ class SyncJobs extends Command
                             $customerData['nameOnReport'] = trim($contact['first'] . " " . $contact['last']);
                         }
 
-                        if (str_contains(strtolower($contact['type']), "billing")) {
+                        if (preg_match("/b[iy]l[lie]ing/", strtolower($contact['type'])) > 0) {
                             $customerData['name'] = trim($contact['first'] . " " . $contact['last']);
                             $customerData['email'] = strtolower($contact['email']);
                             $customerData['phone'] = $contact['mobile'];
                         }
 
-                        if (str_contains(strtolower($contact['type']), "builder")) {
+                        // if (str_contains(strtolower($contact['type']), "billing")) {
+                        //     $customerData['name'] = trim($contact['first'] . " " . $contact['last']);
+                        //     $customerData['email'] = strtolower($contact['email']);
+                        //     $customerData['phone'] = $contact['mobile'];
+                        // }
+
+                        if (preg_match("/b[uo]ild[eaiou]r/", strtolower($contact['type'])) > 0) {
                             $customerData['builder'] = trim($contact['first'] . " " . $contact['last']);
                             $customerData['builderEmail'] = strtolower($contact['email']);
                             $customerData['builderPhone'] = $contact['mobile'];
                         }
 
-                        if (str_contains(strtolower($contact['type']), "supervisor")) {
+                        if (preg_match("/s[uo]p[eaiou]r[uo]v[iy]s[eaiou]r/", strtolower($contact['type'])) > 0) {
                             $customerData['supervisor'] = trim($contact['first'] . " " . $contact['last']);
                             $customerData['supervisorEmail'] = strtolower($contact['email']);
                             $customerData['supervisorPhone'] = $contact['mobile'];
                         }
+
+                        // if (str_contains(strtolower($contact['type']), "builder")) {
+                        //     $customerData['builder'] = trim($contact['first'] . " " . $contact['last']);
+                        //     $customerData['builderEmail'] = strtolower($contact['email']);
+                        //     $customerData['builderPhone'] = $contact['mobile'];
+                        // }
+
+                        // if (str_contains(strtolower($contact['type']), "supervisor")) {
+                        //     $customerData['supervisor'] = trim($contact['first'] . " " . $contact['last']);
+                        //     $customerData['supervisorEmail'] = strtolower($contact['email']);
+                        //     $customerData['supervisorPhone'] = $contact['mobile'];
+                        // }
                     }
 
                     $customerData['id'] = $serviceJob['company_uuid'];

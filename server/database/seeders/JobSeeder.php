@@ -7,7 +7,6 @@ use App\Models\Job;
 use App\Models\JobCategory;
 use App\Models\User;
 use DateTime;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
 
@@ -77,28 +76,46 @@ class JobSeeder extends Seeder
 
                 $customerData = new Customer();
 
-                foreach ($contacts as $key => $contact) {
+                foreach ($contacts as $contact) {
                     if (str_contains(strtolower($contact['type']), "report")) {
                         $customerData['nameOnReport'] = trim($contact['first'] . " " . $contact['last']);
                     }
 
-                    if (str_contains(strtolower($contact['type']), "billing")) {
+                    if (preg_match("/b[iy]l[lie]ing/", strtolower($contact['type'])) > 0) {
                         $customerData['name'] = trim($contact['first'] . " " . $contact['last']);
                         $customerData['email'] = strtolower($contact['email']);
                         $customerData['phone'] = $contact['mobile'];
                     }
 
-                    if (str_contains(strtolower($contact['type']), "builder")) {
+                    // if (str_contains(strtolower($contact['type']), "billing")) {
+                    //     $customerData['name'] = trim($contact['first'] . " " . $contact['last']);
+                    //     $customerData['email'] = strtolower($contact['email']);
+                    //     $customerData['phone'] = $contact['mobile'];
+                    // }
+
+                    if (preg_match("/b[uo]ild[eaiou]r/", strtolower($contact['type'])) > 0) {
                         $customerData['builder'] = trim($contact['first'] . " " . $contact['last']);
                         $customerData['builderEmail'] = strtolower($contact['email']);
                         $customerData['builderPhone'] = $contact['mobile'];
                     }
 
-                    if (str_contains(strtolower($contact['type']), "supervisor")) {
+                    if (preg_match("/s[uo]p[eaiou]r[uo]v[iy]s[eaiou]r/", strtolower($contact['type'])) > 0) {
                         $customerData['supervisor'] = trim($contact['first'] . " " . $contact['last']);
                         $customerData['supervisorEmail'] = strtolower($contact['email']);
                         $customerData['supervisorPhone'] = $contact['mobile'];
                     }
+
+                    // if (str_contains(strtolower($contact['type']), "builder")) {
+                    //     $customerData['builder'] = trim($contact['first'] . " " . $contact['last']);
+                    //     $customerData['builderEmail'] = strtolower($contact['email']);
+                    //     $customerData['builderPhone'] = $contact['mobile'];
+                    // }
+
+                    // if (str_contains(strtolower($contact['type']), "supervisor")) {
+                    //     $customerData['supervisor'] = trim($contact['first'] . " " . $contact['last']);
+                    //     $customerData['supervisorEmail'] = strtolower($contact['email']);
+                    //     $customerData['supervisorPhone'] = $contact['mobile'];
+                    // }
                 }
 
                 $customerData['id'] = $companyUuid;

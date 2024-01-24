@@ -1,31 +1,31 @@
 import { useLocation, useParams } from "react-router-dom";
-import Card from "../../components/Card";
 import PageLayout from "../../layout/PageLayout";
 import { useEffect, useState } from "react";
 import { Item as ItemType } from "../../types";
 import inspectionApi from "../../api/inspectionApi";
 import Loading from "../../components/Loading";
-import { Flex, Grid, Image, Text } from "@chakra-ui/react";
-import DataNotFound from "../../components/DataNotFound";
+import { Text } from "@chakra-ui/react";
 import { useGlobalContext } from "../../context/GlobalContext";
 import ItemForm from "./ItemForm";
 
-const Item = () => {
+const LibraryItem = () => {
+  const { user } = useGlobalContext();
+  if (user.role === "Inspector") {
+    return null;
+  }
   const { id } = useParams();
   const { state } = useLocation();
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState<ItemType | null>(null);
+  const [error, setError] = useState<any>(null);
 
-  let categories;
-  const { user } = useGlobalContext();
-  if (user.role !== "Inspector") {
-    categories = state.categories;
-  }
+  let categories = state.categories;
 
   useEffect(() => {
     (async () => {
-      const { success, data } = await inspectionApi.get(`/items/${id}`);
+      const { success, data, error } = await inspectionApi.get(`/items/${id}`);
       if (!success) {
+        setError(error);
         setLoading(false);
         return;
       }
@@ -40,7 +40,12 @@ const Item = () => {
         <Loading />
       ) : (
         <>
-          {user.role === "Inspector" ? (
+          {item ? (
+            <ItemForm isEditing={true} categories={categories} item={item!} />
+          ) : (
+            <Text>{error}</Text>
+          )}
+          {/* {user.role === "Inspector" ? (
             <Card>
               {item ? (
                 <Grid gap={2}>
@@ -99,13 +104,13 @@ const Item = () => {
                 <DataNotFound />
               )}
             </Card>
-          ) : (
-            <ItemForm isEditing={true} categories={categories} item={item!} />
-          )}
+          ) : ( */}
+
+          {/* )} */}
         </>
       )}
     </PageLayout>
   );
 };
 
-export default Item;
+export default LibraryItem;

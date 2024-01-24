@@ -7,10 +7,10 @@ import {
   useLocation,
 } from "react-router-dom";
 import { GlobalContext } from "../context/GlobalContext";
-import { Avatar, Box, Flex, Grid, IconButton, Text } from "@chakra-ui/react";
+import { Avatar, Box, Flex, Grid, Text } from "@chakra-ui/react";
 import menuitems from "../router/menuitems";
 import { useEffect, useState } from "react";
-import { ChevronDown } from "../icons";
+import { ChevronDown, ChevronUp } from "../icons";
 
 export const dashboardLoader: LoaderFunction = ({ request }) => {
   try {
@@ -35,6 +35,7 @@ const Dashboard = () => {
   const user: any = useLoaderData();
   const { pathname } = useLocation();
   const currentPath = pathname.split("/")[1];
+  const nestedPath = pathname.split("/")[2];
   const [connection, setConnection] = useState("Online");
   const [dropdown, setDropdown] = useState<any>(null);
 
@@ -94,13 +95,14 @@ const Dashboard = () => {
             {menuitems.map(
               (item, index) =>
                 item.children ? (
-                  <>
+                  <Box key={index}>
                     <Flex
                       key={index}
                       alignItems={"center"}
                       gap={2}
                       px={3}
                       py={2}
+                      mb={2}
                       borderRadius={"full"}
                       bg={
                         item.path === "/" + currentPath
@@ -121,7 +123,11 @@ const Dashboard = () => {
                           )
                         }
                       >
-                        <ChevronDown boxSize={5} />
+                        {dropdown === item.path ? (
+                          <ChevronUp boxSize={5} />
+                        ) : (
+                          <ChevronDown boxSize={5} />
+                        )}
                       </button>
                     </Flex>
                     {dropdown === item.path && (
@@ -129,7 +135,11 @@ const Dashboard = () => {
                         {item.children.map((child, index) => (
                           <Link to={child.path} key={index}>
                             <Box
-                              bg={"primary.100"}
+                              bg={
+                                item.path + "/" + nestedPath === child.path
+                                  ? "primary.100"
+                                  : "primary.50"
+                              }
                               px={3}
                               py={2}
                               borderRadius={"full"}
@@ -140,9 +150,9 @@ const Dashboard = () => {
                         ))}
                       </Grid>
                     )}
-                  </>
+                  </Box>
                 ) : (
-                  <Flex></Flex>
+                  <Flex key={index}></Flex>
                 )
 
               // <>

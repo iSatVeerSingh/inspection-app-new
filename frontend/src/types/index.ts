@@ -17,7 +17,8 @@ export type Item = {
   summary: string;
   openingParagraph: string;
   closingParagraph: string;
-  embeddedImage: string | File | FileList | null;
+  embeddedImages: any[] | null | string;
+  embeddedImagePlace?: string;
   height: number;
   created_at: string;
   updated_at: string;

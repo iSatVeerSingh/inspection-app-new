@@ -11,8 +11,12 @@ import InputBtn from "../../components/InputBtn";
 import DataNotFound from "../../components/DataNotFound";
 import { useGlobalContext } from "../../context/GlobalContext";
 
-const AllItems = () => {
+const AllItemsLibrary = () => {
   const navigate = useNavigate();
+  const { user } = useGlobalContext();
+  if (user.role === "Inspector") {
+    return null;
+  }
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -22,7 +26,6 @@ const AllItems = () => {
   );
   const [pages, setPages] = useState<any>(null);
   const toast = useToast();
-  const { user } = useGlobalContext();
 
   const getAllItems = async (url: string) => {
     setLoading(true);
@@ -132,11 +135,7 @@ const AllItems = () => {
           {items.length !== 0 ? (
             <Grid gap={2}>
               {items.map((item: any) => (
-                <Link
-                  to={"./" + item.id}
-                  key={item.id}
-                  state={user.role !== "Inspector" ? { categories } : undefined}
-                >
+                <Link to={"./" + item.id} key={item.id} state={{ categories }}>
                   <Card>
                     <Flex
                       alignItems={"center"}
@@ -196,4 +195,4 @@ const AllItems = () => {
   );
 };
 
-export default AllItems;
+export default AllItemsLibrary;

@@ -1,4 +1,19 @@
-import { Box, Flex, Image, Text, VStack, useToast } from "@chakra-ui/react";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Box,
+  Button,
+  Flex,
+  Image,
+  Text,
+  VStack,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
 import Card from "../../components/Card";
 import FileInput from "../../components/FileInput";
 import FormInput from "../../components/FormInput";
@@ -16,6 +31,7 @@ import inspectionApi from "../../api/inspectionApi";
 import { getChangedValues } from "../../utils/getChangedValues";
 import { useNavigate } from "react-router-dom";
 import { CLEAR_EDITOR_COMMAND, LexicalEditor } from "lexical";
+import ButtonOuline from "../../components/ButtonOuline";
 
 type ItemFormProps = {
   categories: any;
@@ -32,6 +48,9 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
   const navigate = useNavigate();
   const toast = useToast();
   const parentRef = useRef<HTMLDivElement>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (isEditing && item) {
@@ -73,8 +92,9 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
     const itemFormData: Partial<Item> = {
       category_id: formData.get("category_id")?.toString().trim(),
       name: formData.get("name")?.toString().trim(),
-      embeddedImage: formData.get("embeddedImage") as File,
+      embeddedImages: formData.getAll("embeddedImages"),
       summary: formData.get("summary")?.toString().trim(),
+      embeddedImagePlace: formData.get("embeddedImagePlace")?.toString().trim(),
     };
 
     let openingText = "";
@@ -144,18 +164,19 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
       name: itemFormData.name,
       openingParagraph: openingText,
       closingParagraph: closingText,
-      embeddedImage: imgRemoved ? null : item?.embeddedImage,
+      embeddedImages: imgRemoved ? null : item?.embeddedImages,
       summary: itemFormData.summary,
+      embeddedImagePlace: itemFormData.embeddedImagePlace,
     };
 
     if (
-      itemFormData.embeddedImage &&
-      (itemFormData.embeddedImage as File).size > 0
+      itemFormData.embeddedImages &&
+      itemFormData.embeddedImages[0].size > 0
     ) {
-      const resized = await getResizedImagesBase64Main([
-        itemFormData.embeddedImage as File,
-      ]);
-      libItemData.embeddedImage = resized[0];
+      const resized = await getResizedImagesBase64Main(
+        itemFormData.embeddedImages as unknown as FileList
+      );
+      libItemData.embeddedImages = resized;
     }
 
     parentRef.current!.innerHTML = "";
@@ -173,11 +194,25 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
     openingDiv.innerHTML = libItemData.openingParagraph!;
     parentRef.current!.appendChild(openingDiv);
 
-    if (libItemData.embeddedImage) {
-      const img = document.createElement("img");
-      img.src = libItemData.embeddedImage! as string;
-      img.style.height = "220pt";
-      parentRef.current!.appendChild(img);
+    if (
+      libItemData.embeddedImages &&
+      Array.isArray(libItemData.embeddedImages)
+    ) {
+      const imgdiv = document.createElement("div");
+      imgdiv.style.display = "grid";
+      imgdiv.style.gap = "5pt";
+      imgdiv.style.gridTemplateColumns = "1fr 1fr";
+
+      for (let i = 0; i < libItemData.embeddedImages.length; i++) {
+        let embeddedImage = libItemData.embeddedImages[i];
+        const img = document.createElement("img");
+        img.src = embeddedImage! as string;
+        img.style.width = "200pt";
+        img.style.height = "220pt";
+        imgdiv.appendChild(img);
+      }
+
+      parentRef.current!.appendChild(imgdiv);
     }
 
     const closingDiv = document.createElement("div");
@@ -246,6 +281,33 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
     setImgRemoved(true);
   };
 
+  const deleteItem = async () => {
+    if (!isEditing) {
+      return;
+    }
+    setDeleting(true);
+    const { success, data, error } = await inspectionApi.delete(
+      `/items/${item?.id}`
+    );
+    if (!success) {
+      toast({
+        title: error,
+        duration: 4000,
+        status: "error",
+      });
+      setDeleting(false);
+      return;
+    }
+
+    toast({
+      title: data.message,
+      duration: 4000,
+      status: "success",
+    });
+    setDeleting(false);
+    navigate(-1);
+  };
+
   return (
     <Card position={"relative"} zIndex={2}>
       <form onSubmit={onSubmitItemForm}>
@@ -267,19 +329,37 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
             defaultValue={isEditing ? item?.name : ""}
             inputError={formErrors?.name}
           />
-          {isEditing && item?.embeddedImage && !imgRemoved && (
-            <Box>
-              <Text>Embedded Image</Text>
-              <Image src={item.embeddedImage as string} width={"300px"} />
-              <InputBtn value={"Remove"} onClick={removeImg} />
-            </Box>
-          )}
+          {isEditing &&
+            item?.embeddedImages &&
+            Array.isArray(item.embeddedImages) &&
+            !imgRemoved && (
+              <Box>
+                <Text>Embedded Image</Text>
+                <Flex wrap={"wrap"} gap={2}>
+                  {item.embeddedImages.map((img, index) => (
+                    <Image src={img as string} key={index} width={"250px"} />
+                  ))}
+                </Flex>
+                <InputBtn value={"Remove"} onClick={removeImg} />
+              </Box>
+            )}
           <FileInput
-            id="embeddedImage"
-            name="embeddedImage"
-            label={isEditing ? "New Embedded Image" : "Embedded Image"}
+            id="embeddedImages"
+            name="embeddedImages"
+            multiple
+            label={isEditing ? "New Embedded Images" : "Embedded Images"}
             accept=".jpg, .png, .jpeg"
-            inputError=""
+          />
+          <FormSelect
+            id="embeddedImagePlace"
+            name="embeddedImagePlace"
+            options={[
+              "Before Item Images",
+              "Before Closing Paragraph",
+              "After Closing Paragraph",
+            ]}
+            label="Embedded Image Position"
+            defaultValue={"Before Closing Paragraph"}
           />
           <RichEditor
             ref={openingParagraphRef}
@@ -300,10 +380,22 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
             label="Summary"
           />
         </VStack>
-        <Flex mt={2}>
-          <ButtonPrimary isLoading={saving} loadingText="Saving" type="submit">
-            Save
-          </ButtonPrimary>
+        <Flex mt={2} justifyContent={"space-between"}>
+          <Flex gap={3}>
+            <ButtonPrimary
+              isLoading={saving}
+              loadingText="Saving"
+              type="submit"
+            >
+              Save
+            </ButtonPrimary>
+            <ButtonOuline onClick={() => navigate(-1)}>Cancel</ButtonOuline>
+          </Flex>
+          {isEditing && (
+            <Button borderRadius={"full"} colorScheme="red" onClick={onOpen}>
+              Delete
+            </Button>
+          )}
         </Flex>
       </form>
       <div
@@ -317,6 +409,36 @@ const ItemForm = ({ categories, item, isEditing }: ItemFormProps) => {
       >
         <div ref={parentRef}></div>
       </div>
+
+      <AlertDialog
+        isOpen={isOpen}
+        onClose={onClose}
+        closeOnOverlayClick={false}
+        leastDestructiveRef={cancelRef}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Delete Item</AlertDialogHeader>
+            <AlertDialogBody>
+              Are you sure? You can't undo this action afterwards.
+            </AlertDialogBody>
+            <AlertDialogFooter gap={2}>
+              <Button borderRadius={"full"} ref={cancelRef} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                borderRadius={"full"}
+                colorScheme="red"
+                onClick={deleteItem}
+                isLoading={deleting}
+                loadingText="Deleting"
+              >
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Card>
   );
 };

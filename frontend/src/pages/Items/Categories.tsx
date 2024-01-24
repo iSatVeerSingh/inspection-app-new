@@ -27,6 +27,7 @@ import {
   Text,
   useDisclosure,
   useToast,
+  Button,
 } from "@chakra-ui/react";
 import { MoreIcon } from "../../icons";
 import FormInput from "../../components/FormInput";
@@ -66,6 +67,7 @@ const Categories = () => {
 
   const handleNewCategoryBtn = () => {
     setIsEditing(false);
+    setInitCategory(null);
     onOpen();
   };
 
@@ -251,6 +253,7 @@ const Categories = () => {
         isOpen={isOpenAlert}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
+        closeOnOverlayClick={false}
       >
         <AlertDialogOverlay>
           <AlertDialogContent>
@@ -261,16 +264,22 @@ const Categories = () => {
               Are you sure? You can't undo this action afterwards.
             </AlertDialogBody>
             <AlertDialogFooter gap={3}>
-              <ButtonOuline ref={cancelRef} onClick={onCloseAlert}>
+              <Button
+                borderRadius={"full"}
+                ref={cancelRef}
+                onClick={onCloseAlert}
+              >
                 Cancel
-              </ButtonOuline>
-              <ButtonPrimary
+              </Button>
+              <Button
+                colorScheme="red"
+                borderRadius={"full"}
                 isLoading={saving}
                 loadingText="Submitting"
                 onClick={deleteCategory}
               >
                 Delete
-              </ButtonPrimary>
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialogOverlay>

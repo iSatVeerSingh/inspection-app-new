@@ -5,6 +5,7 @@ import {
   ITEM_CATEGORIES,
   LIBRARY_ITEM,
   LIBRARY_ITEMS,
+  LIBRARY_NOTES,
   NEW_LIBRARY_ITEM,
   SETTINGS,
 } from "./paths";
@@ -13,6 +14,7 @@ import AllItemsLibrary from "../pages/Items/AllItemsLibrary";
 import LibraryItem from "../pages/Items/LibraryItem";
 import NewItem from "../pages/Items/NewItem";
 import Categories from "../pages/Items/Categories";
+import NotesLibrary from "../pages/Settings/NotesLibrary";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -72,6 +74,10 @@ export default createBrowserRouter([
           {
             path: ITEM_CATEGORIES,
             element: <Categories />
+          },
+          {
+            path: LIBRARY_NOTES,
+            element: <NotesLibrary />
           }
         ],
       },

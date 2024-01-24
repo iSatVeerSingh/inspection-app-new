@@ -30,8 +30,8 @@ export const LIBRARY_ITEMS = SETTINGS + "/items";
 export const LIBRARY_ITEM = LIBRARY_ITEMS + "/:id";
 export const NEW_LIBRARY_ITEM = LIBRARY_ITEMS + "/new";
 
-export const LIBRARY_NOTES = SETTINGS + "/notes";
-
 export const ITEM_CATEGORIES = SETTINGS + "/categories";
+
+export const LIBRARY_NOTES = SETTINGS + "/notes";
 
 export const JOB_CATEGORIES = SETTINGS + "/job-categories";

@@ -6,10 +6,12 @@ use App\Http\Resources\FullItemResource;
 use App\Http\Resources\InspectorItemSummaryResource;
 use App\Http\Resources\ItemCollection;
 use App\Http\Resources\ItemResource;
+use App\Mail\ItemSuggestion;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class ItemController extends Controller
 {
@@ -91,5 +93,27 @@ class ItemController extends Controller
         $content = $itemCollection->toJson();
         $contentLength = strlen($content);
         return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
+    }
+
+    public function suggestItem(Request $request)
+    {
+        $validated = $request->validate([
+            'category' => 'required|max:255',
+            'name' => 'required|unique:items,name',
+            'summary' => 'required',
+            'openingParagraph' => 'required',
+            'closingParagraph' => 'required',
+            'embeddedImages' => 'sometimes|required'
+        ]);
+
+        $user = Auth::user();
+
+        $sentMail = Mail::to('mail.satveer@gmail.com')->send(new ItemSuggestion($validated, $user['first'] . " " . $user['last']));
+
+        if (!$sentMail) {
+            return response()->json(['message' => 'Couln\'t send suggestion. Something went wrong'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json(['message' => 'Suggestion sent successfully']);
     }
 }

@@ -25,7 +25,7 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
                 'role' => $user['role'],
                 'email' => $user['email'],
-                'name' => $user['name']
+                'name' => $user['first'] . " " . $user['last']
             ]);
         }
 

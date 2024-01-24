@@ -103,4 +103,13 @@ class JobCategoryController extends Controller
         $jobCategory->update(['active' => false]);
         return response()->json(['message' => 'Job category deleted successfully']);
     }
+
+    public function install(Request $request)
+    {
+        $categories = JobCategory::where('active', true)->select('id', 'name')->get();
+
+        $content = $categories->toJson();
+        $contentLength = strlen($content);
+        return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
+    }
 }

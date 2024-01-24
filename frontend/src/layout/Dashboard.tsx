@@ -7,9 +7,10 @@ import {
   useLocation,
 } from "react-router-dom";
 import { GlobalContext } from "../context/GlobalContext";
-import { Avatar, Box, Flex, Grid, Text } from "@chakra-ui/react";
+import { Avatar, Box, Flex, Grid, IconButton, Text } from "@chakra-ui/react";
 import menuitems from "../router/menuitems";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ChevronDown } from "../icons";
 
 export const dashboardLoader: LoaderFunction = ({ request }) => {
   try {
@@ -34,19 +35,39 @@ const Dashboard = () => {
   const user: any = useLoaderData();
   const { pathname } = useLocation();
   const currentPath = pathname.split("/")[1];
+  const [connection, setConnection] = useState("Online");
+  const [dropdown, setDropdown] = useState<any>(null);
 
-  // useEffect(()=> {
-  //   window.addEventListener('online', ()=> {
-  //     console.log('system is online')
-  //   })
+  const setOnline = () => {
+    localStorage.setItem("connection", "online");
+    setConnection("online");
+    console.log("Online");
+  };
 
-  //   return () => {
-  //     window.removeEventListener("online");
-  //   }
-  // }, [])
+  const setOffline = () => {
+    localStorage.setItem("connection", "offline");
+    setConnection("Offline");
+    console.log("offline");
+  };
+
+  useEffect(() => {
+    if (navigator.onLine) {
+      setOnline();
+    } else {
+      setOffline();
+    }
+
+    window.addEventListener("online", setOnline);
+    window.addEventListener("offline", setOffline);
+
+    return () => {
+      window.removeEventListener("online", setOnline);
+      window.removeEventListener("offline", setOffline);
+    };
+  }, []);
 
   return (
-    <GlobalContext.Provider value={{ user }}>
+    <GlobalContext.Provider value={{ user, connection }}>
       <Grid
         as="main"
         gridTemplateColumns={"250px auto"}
@@ -66,30 +87,119 @@ const Dashboard = () => {
               <Text fontSize={"lg"} lineHeight={1}>
                 {user.name}
               </Text>
-              <Text fontSize={"small"}>{user.role}</Text>
+              <Text fontSize={"small"}>{connection}</Text>
             </Box>
           </Flex>
           <Flex direction={"column"} py={2} gap={2}>
-            {menuitems.map((item, index) => (
-              <Link to={item.path} key={index}>
-                <Flex
-                  alignItems={"center"}
-                  gap={2}
-                  px="3"
-                  py={2}
-                  borderRadius={"full"}
-                  bg={
-                    item.path === "/" + currentPath
-                      ? "primary.500"
-                      : "primary.50"
-                  }
-                  color={item.path === "/" + currentPath ? "white" : "text.700"}
-                  fontSize={"lg"}
-                >
-                  <Text as="span">{item.name}</Text>
-                </Flex>
-              </Link>
-            ))}
+            {menuitems.map(
+              (item, index) =>
+                item.children ? (
+                  <>
+                    <Flex
+                      key={index}
+                      alignItems={"center"}
+                      gap={2}
+                      px={3}
+                      py={2}
+                      borderRadius={"full"}
+                      bg={
+                        item.path === "/" + currentPath
+                          ? "primary.500"
+                          : "primary.50"
+                      }
+                      color={
+                        item.path === "/" + currentPath ? "white" : "text.700"
+                      }
+                    >
+                      <Link style={{ flexGrow: 1 }} to={item.path}>
+                        {item.name}
+                      </Link>
+                      <button
+                        onClick={() =>
+                          setDropdown((prev: any) =>
+                            prev === item.path ? null : item.path
+                          )
+                        }
+                      >
+                        <ChevronDown boxSize={5} />
+                      </button>
+                    </Flex>
+                    {dropdown === item.path && (
+                      <Grid pl={"3"} gap={2}>
+                        {item.children.map((child, index) => (
+                          <Link to={child.path} key={index}>
+                            <Box
+                              bg={"primary.100"}
+                              px={3}
+                              py={2}
+                              borderRadius={"full"}
+                            >
+                              {child.name}
+                            </Box>
+                          </Link>
+                        ))}
+                      </Grid>
+                    )}
+                  </>
+                ) : (
+                  <Flex></Flex>
+                )
+
+              // <>
+              // <Flex
+              //   key={index}
+              //   alignItems={"center"}
+              //   gap={2}
+              //   px={3}
+              //   py={2}
+              //   borderRadius={"full"}
+              //   bg={
+              //     item.path === "/" + currentPath
+              //       ? "primary.500"
+              //       : "primary.50"
+              //   }
+              //   color={item.path === "/" + currentPath ? "white" : "text.700"}
+              // >
+              //   <Link style={{ flexGrow: 1 }} to={item.path}>
+              //     {item.name}
+              //   </Link>
+              //   <button
+              //     onClick={() =>
+              //       setDropdown((prev: any) =>
+              //         prev === item.path ? null : item.path
+              //       )
+              //     }
+              //   >
+              //     <ChevronDown boxSize={5} />
+              //   </button>
+              // </Flex>
+              //   <Flex>
+              //     {
+
+              //     }
+              //   </Flex>
+              // </>
+
+              // <Link to={item.path} key={index}>
+              //   <Flex
+              //     alignItems={"center"}
+              //     gap={2}
+              //     px="3"
+              //     py={2}
+              //     borderRadius={"full"}
+              //     bg={
+              //       item.path === "/" + currentPath
+              //         ? "primary.500"
+              //         : "primary.50"
+              //     }
+              //     color={item.path === "/" + currentPath ? "white" : "text.700"}
+              //     fontSize={"lg"}
+              //   >
+              //     <Text as="span">{item.name}</Text>
+              //     <ChevronDown />
+              //   </Flex>
+              // </Link>
+            )}
           </Flex>
         </Grid>
         <Outlet />

@@ -1,3 +1,5 @@
+import { redirect } from "react-router-dom";
+
 class InspectionApi {
   private baseURL: string;
 
@@ -12,6 +14,15 @@ class InspectionApi {
     headers: Record<string, string> = {}
   ): Promise<{ success: boolean; data: any; error: any }> {
     try {
+      const connection = localStorage.getItem("connection");
+      if (!connection || connection === "offline") {
+        return {
+          success: false,
+          data: null,
+          error: "No internet connection. You are offline.",
+        };
+      }
+
       const endpoint = this.baseURL + url;
 
       let auth = "";
@@ -37,6 +48,16 @@ class InspectionApi {
 
       const response = await fetch(endpoint, config);
       const responseData = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem("user");
+        redirect("/login");
+        return {
+          success: false,
+          data: null,
+          error: "Session expired. Please login again",
+        };
+      }
 
       if (!response.ok) {
         return {

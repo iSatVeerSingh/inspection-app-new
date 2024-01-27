@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import Dashboard, { dashboardLoader } from "../layout/Dashboard";
 import {
   ITEM_CATEGORIES,
+  JOB_CATEGORIES,
   LIBRARY_ITEM,
   LIBRARY_ITEMS,
   LIBRARY_NOTES,
@@ -15,6 +16,7 @@ import LibraryItem from "../pages/Items/LibraryItem";
 import NewItem from "../pages/Items/NewItem";
 import Categories from "../pages/Items/Categories";
 import NotesLibrary from "../pages/Settings/NotesLibrary";
+import JobCategories from "../pages/Settings/JobCategories";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -73,12 +75,16 @@ export default createBrowserRouter([
           },
           {
             path: ITEM_CATEGORIES,
-            element: <Categories />
+            element: <Categories />,
           },
           {
             path: LIBRARY_NOTES,
-            element: <NotesLibrary />
-          }
+            element: <NotesLibrary />,
+          },
+          {
+            path: JOB_CATEGORIES,
+            element: <JobCategories />,
+          },
         ],
       },
     ],

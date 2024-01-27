@@ -1,6 +1,7 @@
 import {
   FormControl,
   FormControlProps,
+  FormErrorMessage,
   FormLabel,
   Input,
   InputProps,
@@ -36,6 +37,7 @@ const FormInput = (
         autoComplete="off"
         ref={ref}
       />
+      {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
     </FormControl>
   );
 };

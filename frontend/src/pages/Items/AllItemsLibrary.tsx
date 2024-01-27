@@ -177,6 +177,7 @@ const AllItemsLibrary = () => {
       {pages && items.length !== 0 && (
         <Flex mt={4} justifyContent={"space-between"} alignItems={"center"}>
           <Button
+            borderRadius={"full"}
             isDisabled={pages.prev === null}
             onClick={() => updateSearch("page", pages.prev.toString(), true)}
           >
@@ -184,6 +185,7 @@ const AllItemsLibrary = () => {
           </Button>
           <Text>Current Page: {pages.current_page}</Text>
           <Button
+            borderRadius={"full"}
             isDisabled={pages.next === null}
             onClick={() => updateSearch("page", pages.next.toString(), true)}
           >

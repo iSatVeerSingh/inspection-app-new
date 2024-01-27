@@ -11,7 +11,13 @@ class JobCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        return JobCategory::where('active', true)->get();
+        $categories = JobCategory::where('active', true);
+
+        if ($request->has('nameonly')) {
+            $categories->select('id', 'name');
+        }
+
+        return $categories->orderBy('updated_at', 'desc')->get();
     }
 
     public function store(Request $request)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\InspectorNoteResource;
 use App\Http\Resources\NoteCollection;
 use App\Mail\NoteSuggestion;
 use App\Models\Note;
@@ -20,7 +21,12 @@ class NoteController extends Controller
             $notes->where('category_id', $request->category_id);
         }
 
-        return $notes->orderBy('updated_at', 'desc')->get();
+        if ($request->has('keyword')) {
+            $keyword = $request->input('keyword');
+            $notes->where('text', 'like', '%' . $keyword . '%');
+        }
+
+        return new NoteCollection($notes->orderBy('updated_at', 'desc')->simplePaginate());
     }
 
     public function store(Request $request)
@@ -63,7 +69,7 @@ class NoteController extends Controller
     public function install(Request $request)
     {
         $notes = Note::where('active', true)->get();
-        $noteCollection = new NoteCollection($notes);
+        $noteCollection = InspectorNoteResource::collection($notes);
         $content = $noteCollection->toJson();
         $contentLength = strlen($content);
         return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);

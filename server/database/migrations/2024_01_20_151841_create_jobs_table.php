@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('siteAddress');
             $table->string('status')->index();
             $table->dateTime('completedAt')->nullable()->index();
-            $table->text('description')->nullable();
+            $table->text('description')->nullable(); 
             $table->timestamps();
         });
     }

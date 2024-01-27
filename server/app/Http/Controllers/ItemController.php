@@ -24,8 +24,7 @@ class ItemController extends Controller
         }
         if ($request->has('keyword')) {
             $keyword = $request->input('keyword');
-            $items->where('name', 'like', '%' . $keyword . '%')
-                ->orWhere('summary', 'like', '%' . $keyword . '%');
+            $items->where('name', 'like', '%' . $keyword . '%');
         }
 
         return new ItemCollection($items->orderBy('updated_at', 'desc')->simplePaginate());

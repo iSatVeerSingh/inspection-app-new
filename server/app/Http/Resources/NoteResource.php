@@ -14,13 +14,14 @@ class NoteResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // return parent::toArray($request);
-        $note = [
-            "id" => $this['id'],
-            "category_id" => $this['category_id'],
-            "text" => $this['text'],
-            "category" => $this->jobCategory['name'],
-        ];
+        $note = parent::toArray($request);
+        $note['category'] = $this->jobCategory['name'];
+        // $note = [
+        //     "id" => $this['id'],
+        //     "category_id" => $this['category_id'],
+        //     "text" => $this['text'],
+        //     "category" => $this->jobCategory['name'],
+        // ];
         return $note;
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\JobCategoryController;
@@ -48,4 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
   Route::post('/suggest-note', [NoteController::class, 'suggestNote']);
   Route::post('/suggest-item', [ItemController::class, 'suggestItem']);
+
+  Route::get('/company', [CompanyController::class, 'index']);
+
+  Route::put('/company', [CompanyController::class, 'update'])->middleware(EnsureUserIsOwner::class);
 });

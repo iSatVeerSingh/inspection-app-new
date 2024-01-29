@@ -35,3 +35,4 @@ export const ITEM_CATEGORIES = SETTINGS + "/categories";
 export const LIBRARY_NOTES = SETTINGS + "/notes";
 
 export const JOB_CATEGORIES = SETTINGS + "/job-categories";
+export const RECOMMENDATIONS = SETTINGS + "/recommendations"

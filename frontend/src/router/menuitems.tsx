@@ -58,6 +58,10 @@ export default [
         path: paths.JOB_CATEGORIES,
         name: "Job Categories",
       },
+      {
+        path: paths.RECOMMENDATIONS,
+        name: "Recommendations",
+      },
     ],
   },
 ];

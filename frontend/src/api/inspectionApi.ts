@@ -1,3 +1,4 @@
+import axios from "axios";
 import { redirect } from "react-router-dom";
 
 class InspectionApi {
@@ -51,7 +52,7 @@ class InspectionApi {
 
       if (response.status === 401) {
         localStorage.removeItem("user");
-        redirect("/login");
+        window.location.pathname = "/login";
         return {
           success: false,
           data: null,
@@ -110,3 +111,44 @@ class InspectionApi {
 
 const inspectionApi = new InspectionApi("/api");
 export default inspectionApi;
+
+export const inspectionApiAxios = axios.create({
+  baseURL: "/api",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+});
+
+inspectionApiAxios.interceptors.request.use((config) => {
+  const jsonUser = localStorage.getItem("user");
+  if (jsonUser) {
+    const user = JSON.parse(jsonUser);
+    config.headers.Authorization = `Bearer ${user.access_token}`;
+  }
+  return config;
+});
+
+inspectionApiAxios.interceptors.response.use(
+  (response) => response,
+  (error: any) => {
+    if (error.code === "ERR_NETWORK") {
+      return {
+        data: {
+          message: error.message || "No Internet Connection. You are offline",
+        },
+      };
+    }
+
+    if (error.response?.status === 401) {
+      redirect("/login");
+      return;
+    }
+
+    return {
+      data: {
+        message: error.message,
+      },
+    };
+  }
+);

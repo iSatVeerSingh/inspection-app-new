@@ -8,6 +8,7 @@ import {
   LIBRARY_ITEMS,
   LIBRARY_NOTES,
   NEW_LIBRARY_ITEM,
+  RECOMMENDATIONS,
   SETTINGS,
 } from "./paths";
 import Company from "../pages/Settings/Company";
@@ -17,6 +18,8 @@ import NewItem from "../pages/Items/NewItem";
 import Categories from "../pages/Items/Categories";
 import NotesLibrary from "../pages/Settings/NotesLibrary";
 import JobCategories from "../pages/Settings/JobCategories";
+import Init from "../pages/Init";
+import Recommendations from "../pages/Settings/Recommendations";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -85,6 +88,10 @@ export default createBrowserRouter([
             path: JOB_CATEGORIES,
             element: <JobCategories />,
           },
+          {
+            path: RECOMMENDATIONS,
+            element: <Recommendations />,
+          },
         ],
       },
     ],
@@ -92,5 +99,9 @@ export default createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/init",
+    element: <Init />,
   },
 ]);

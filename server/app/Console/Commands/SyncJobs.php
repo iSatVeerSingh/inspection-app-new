@@ -57,7 +57,7 @@ class SyncJobs extends Command
                 if ($serviceJob['active'] === 0) {
                     // if job is deleted on service m8
                     $job = Job::find($serviceJob['uuid']);
-                    $job->update(['active' => false]);
+                    $job->delete();
                 } else {
                     // if job is not deleted on service m8
                     $acitvityResponse = Http::withBasicAuth($username, $password)

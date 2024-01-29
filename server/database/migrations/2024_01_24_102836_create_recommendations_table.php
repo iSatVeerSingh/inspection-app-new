@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('recommendations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->boolean('active')->default(true)->index();
             $table->text('text')->unique();
             $table->timestamps();
         });

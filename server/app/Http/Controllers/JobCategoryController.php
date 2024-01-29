@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ItemCategory;
 use App\Models\JobCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -11,7 +12,7 @@ class JobCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = JobCategory::where('active', true);
+        $categories = JobCategory::query();
 
         if ($request->has('nameonly')) {
             $categories->select('id', 'name');
@@ -52,10 +53,6 @@ class JobCategoryController extends Controller
 
     public function update(Request $request, JobCategory $jobCategory)
     {
-        if ($jobCategory['active'] === false) {
-            return response()->json(['message' => 'Job category does not exist'], Response::HTTP_NOT_FOUND);
-        }
-
         $oldName = $jobCategory['name'];
 
         $validated = $request->validate([
@@ -86,10 +83,6 @@ class JobCategoryController extends Controller
 
     public function destroy(Request $request, JobCategory $jobCategory)
     {
-        if ($jobCategory['active'] === false) {
-            return response()->json(['message' => 'Job category does not exist'], Response::HTTP_NOT_FOUND);
-        }
-
         $count = $jobCategory->notes()->count();
         if ($count !== 0) {
             return response()->json(['message' => "Job Category is not empty"]);
@@ -106,13 +99,13 @@ class JobCategoryController extends Controller
             return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
         }
 
-        $jobCategory->update(['active' => false]);
+        $jobCategory->delete();
         return response()->json(['message' => 'Job category deleted successfully']);
     }
 
     public function install(Request $request)
     {
-        $categories = JobCategory::where('active', true)->select('id', 'name')->get();
+        $categories = JobCategory::select('id', 'name')->get();
 
         $content = $categories->toJson();
         $contentLength = strlen($content);

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->boolean('active')->default(true)->index();
             $table->foreignUuid('category_id')->constrained('item_categories');
             $table->string('name')->index();
             $table->text('summary')->nullable();

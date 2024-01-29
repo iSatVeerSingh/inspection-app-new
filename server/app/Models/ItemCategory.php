@@ -13,12 +13,7 @@ class ItemCategory extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'active',
         'name'
-    ];
-
-    protected $casts = [
-        'active' => 'boolean',
     ];
 
     protected function serializeDate(DateTimeInterface $date)

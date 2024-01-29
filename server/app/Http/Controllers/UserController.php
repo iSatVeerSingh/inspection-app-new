@@ -12,8 +12,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        return User::where('active', true)
-            ->orderBy('updated_at', 'desc')
+        return User::orderBy('updated_at', 'desc')
             ->get();
     }
 
@@ -63,11 +62,6 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        if ($user['active'] === false) {
-            return response()->json(['message' => 'User does not exist'], Response::HTTP_NOT_FOUND);
-        }
-        // Get staff memebers from servicem8 and create users
-
         $validated = $request->validate([
             'first' => 'sometimes|required|max:255',
             'last' => 'sometimes|required|max:255',
@@ -106,10 +100,6 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user)
     {
-        if ($user['active'] === false) {
-            return response()->json(['message' => 'User does not exist'], Response::HTTP_NOT_FOUND);
-        }
-
         if (Auth::id() === $user['id'] || $user['role'] === "Owner") {
             return response()->json(['message' => 'Owner can not be deleted'], Response::HTTP_BAD_REQUEST);
         }
@@ -124,7 +114,7 @@ class UserController extends Controller
         if ($resStatus !== 200) {
             return response()->json(['message' => "Invalid request"], Response::HTTP_BAD_REQUEST);
         }
-        $user->update(['active' => false]);
+        $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
 }

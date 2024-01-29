@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RecommendationCollection;
 use App\Models\Recommendation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -10,7 +11,9 @@ class RecommendationController extends Controller
 {
     public function index(Request $request)
     {
-        return Recommendation::where('active', true)->get();
+        $recommendations = Recommendation::query();
+
+        return new RecommendationCollection($recommendations->orderBy('updated_at', 'desc')->simplePaginate());
     }
 
     public function store(Request $request)
@@ -27,10 +30,6 @@ class RecommendationController extends Controller
 
     public function update(Request $request, Recommendation $recommendation)
     {
-        if ($recommendation['active'] === false) {
-            return response()->json(['message' => 'Recommendation does not exists'], Response::HTTP_NOT_FOUND);
-        }
-
         $validated = $request->validate([
             'text' => 'required|unique:recommendations,text'
         ]);
@@ -42,18 +41,14 @@ class RecommendationController extends Controller
 
     public function destroy(Request $request, Recommendation $recommendation)
     {
-        if ($recommendation['active'] === false) {
-            return response()->json(['message' => 'Recommendation does not exists'], Response::HTTP_NOT_FOUND);
-        }
-
-        $recommendation->update(['active' => false]);
+        $recommendation->delete();
 
         return response()->json(["message" => "Recommendation deleted successfully"]);
     }
 
     public function install(Request $request)
     {
-        $recommendations = Recommendation::where('active', true)->select('id', 'text')->get();
+        $recommendations = Recommendation::select('id', 'text')->get();
 
         $content = $recommendations->toJson();
         $contentLength = strlen($content);

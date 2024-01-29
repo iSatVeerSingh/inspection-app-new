@@ -13,7 +13,6 @@ class Item extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'active',
         'category_id',
         'name',
         'summary',
@@ -25,7 +24,6 @@ class Item extends Model
     ];
 
     protected $casts = [
-        'active' => 'boolean',
         'embeddedImages' => 'array'
     ];
 

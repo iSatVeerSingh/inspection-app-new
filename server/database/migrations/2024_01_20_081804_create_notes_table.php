@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->boolean('active')->default(true)->index();
             $table->foreignUuid('category_id')->nullable()->constrained('job_categories');
             $table->text('text');
             $table->timestamps();

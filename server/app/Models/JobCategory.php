@@ -13,14 +13,9 @@ class JobCategory extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'active',
         'name',
         'type',
         'stageOfWorks',
-    ];
-
-    protected $casts = [
-        'active' => 'boolean',
     ];
 
     protected function serializeDate(DateTimeInterface $date)

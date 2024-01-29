@@ -14,13 +14,8 @@ class Note extends Model
 
 
     protected $fillable = [
-        'active',
         'category_id',
         'text',
-    ];
-
-    protected $casts = [
-        'active' => 'boolean',
     ];
 
     protected function serializeDate(DateTimeInterface $date)

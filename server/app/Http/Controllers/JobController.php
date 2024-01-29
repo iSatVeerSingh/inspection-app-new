@@ -15,8 +15,7 @@ class JobController extends Controller
 
     public function install(Request $request)
     {
-        $jobs = Job::where('active', true)
-            ->where('inspector_id', Auth::id())
+        $jobs = Job::where('inspector_id', Auth::id())
             ->where('status', 'Not Started')
             ->get();
 

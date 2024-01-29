@@ -5,6 +5,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\JobCategoryController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\UserController;
@@ -41,11 +42,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/recommendations', RecommendationController::class)->except(['show']);
   });
 
-  Route::get('/install-job-categories', [JobCategoryController::class], 'install');
   Route::get('/install-notes', [NoteController::class, 'install']);
   Route::get('/install-categories', [ItemCategoryController::class, 'install']);
   Route::get('/install-items', [ItemController::class, 'install']);
   Route::get('/install-recommendations', [RecommendationController::class, 'install']);
+  Route::get('/install-job-categories', [JobCategoryController::class, 'install']);
+  Route::get('/install-jobs', [JobController::class, 'install']);
 
   Route::post('/suggest-note', [NoteController::class, 'suggestNote']);
   Route::post('/suggest-item', [ItemController::class, 'suggestItem']);

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('jobs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->boolean('active')->default(true)->index();
             $table->string('jobNumber')->unique();
             $table->foreignUuid('category_id')->nullable()->constrained('job_categories');
             $table->foreignUuid('customer_id')->constrained('customers');
@@ -22,7 +21,7 @@ return new class extends Migration
             $table->string('siteAddress');
             $table->string('status')->index();
             $table->dateTime('completedAt')->nullable()->index();
-            $table->text('description')->nullable(); 
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

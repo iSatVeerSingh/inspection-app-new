@@ -13,12 +13,7 @@ class Recommendation extends Model
 
 
     protected $fillable = [
-        'active',
         'text',
-    ];
-
-    protected $casts = [
-        'active' => 'boolean',
     ];
 
     protected function serializeDate(DateTimeInterface $date)

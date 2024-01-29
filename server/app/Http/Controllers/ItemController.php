@@ -17,7 +17,7 @@ class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        $items = Item::where('active', true);
+        $items = Item::query();
 
         if ($request->has('category_id')) {
             $items->where('category_id', $request->category_id);
@@ -55,10 +55,6 @@ class ItemController extends Controller
 
     public function update(Request $request, Item $item)
     {
-        if ($item['active'] === false) {
-            return response()->json(['message' => "Library item does not exists"], Response::HTTP_NOT_FOUND);
-        }
-
         $validated = $request->validate([
             'category_id' => 'sometimes|exists:item_categories,id',
             'name' => "sometimes|unique:items,name|max:255",
@@ -76,17 +72,13 @@ class ItemController extends Controller
 
     public function destroy(Request $request, Item $item)
     {
-        if ($item['active'] === false) {
-            return response()->json(['message' => "Library item does not exists"], Response::HTTP_NOT_FOUND);
-        }
-
-        $item->update(['active' => false]);
+        $item->delete();
         return response()->json(['message' => 'Item deleted successfully']);
     }
 
     public function install(Request $request)
     {
-        $items = Item::where('active', true)->get();
+        $items = Item::all();
 
         $itemCollection = InspectorItemSummaryResource::collection($items);
         $content = $itemCollection->toJson();

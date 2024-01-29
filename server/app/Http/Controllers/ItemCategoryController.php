@@ -10,8 +10,7 @@ class ItemCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        return ItemCategory::where("active", true)
-            ->withCount(['items as items'])
+        return ItemCategory::withCount(['items as items'])
             ->orderBy('updated_at', 'desc')->get();
     }
 
@@ -28,10 +27,6 @@ class ItemCategoryController extends Controller
 
     public function update(Request $request, ItemCategory $itemCategory)
     {
-        if ($itemCategory['active'] === false) {
-            return response()->json(['message' => "Category does not exists"], Response::HTTP_NOT_FOUND);
-        }
-
         $validated = $request->validate([
             'name' => "required|max:255|unique:item_categories,name"
         ]);
@@ -42,22 +37,18 @@ class ItemCategoryController extends Controller
 
     public function destroy(Request $request, ItemCategory $itemCategory)
     {
-        if ($itemCategory['active'] === false) {
-            return response()->json(['message' => "Category does not exists"], Response::HTTP_NOT_FOUND);
-        }
-
         $count = $itemCategory->items()->count();
         if ($count !== 0) {
             return response()->json(['message' => "Category is not empty"], Response::HTTP_BAD_REQUEST);
         }
 
-        $itemCategory->update(['active' => false]);
+        $itemCategory->delete();
         return response()->json(['message' => "Category deleted successfully"]);
     }
 
     public function install(Request $request)
     {
-        $categories = ItemCategory::where('active', true)->select('id', 'name')->get();
+        $categories = ItemCategory::select('id', 'name')->get();
 
         $content = $categories->toJson();
         $contentLength = strlen($content);

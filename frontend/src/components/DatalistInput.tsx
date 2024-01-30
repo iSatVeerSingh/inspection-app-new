@@ -16,10 +16,19 @@ type DatalistInputProps = InputProps &
   FormControlProps & {
     inputError?: string;
     dataList: string[];
+    onSelect?: any;
   };
 
 const DatalistInput = (
-  { id, label, dataList, inputError, isRequired, ...props }: DatalistInputProps,
+  {
+    id,
+    label,
+    dataList,
+    inputError,
+    onSelect,
+    isRequired,
+    ...props
+  }: DatalistInputProps,
   ref: any
 ) => {
   const inputRef = ref || useRef<HTMLInputElement>(null);
@@ -56,6 +65,9 @@ const DatalistInput = (
       inputRef!.current.dataset.value = item.value;
     }
     setListItems([]);
+    if (typeof onSelect === "function") {
+      onSelect();
+    }
   };
 
   return (

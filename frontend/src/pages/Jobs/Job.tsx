@@ -152,6 +152,38 @@ const Job = () => {
                         </ButtonOuline>
                       </Flex>
                     </Box>
+                    <Box>
+                      <Heading as="h3" fontSize={"xl"} color={"text.700"}>
+                        Add New Inspection Items
+                      </Heading>
+                      <Flex alignItems={"center"} gap={2} mt={2}>
+                        <Text fontSize={"lg"} minW={"200px"}>
+                          Total items from current report
+                        </Text>
+                        <Text
+                          color={"text.600"}
+                          bg={"primary.50"}
+                          px={2}
+                          borderRadius={"md"}
+                        >
+                          {job?.inspectionItems}
+                        </Text>
+                      </Flex>
+                      <Flex mt={2} alignItems={"center"} gap={2}>
+                        <ButtonPrimary
+                          minW={"200px"}
+                          onClick={() => navigate("./add-items")}
+                        >
+                          Add Items
+                        </ButtonPrimary>
+                        <ButtonOuline
+                          minW={"200px"}
+                          onClick={() => navigate("./all-items")}
+                        >
+                          View Items
+                        </ButtonOuline>
+                      </Flex>
+                    </Box>
                   </>
                 )}
               </Card>

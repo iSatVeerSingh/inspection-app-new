@@ -277,3 +277,45 @@ export const deleteInspectionNoteByJobController: RouteHandler = async ({
     return getBadRequestResponse();
   }
 };
+
+// get all categories
+export const getAllCategoriesController: RouteHandler = async () => {
+  try {
+    const categories = await DB.categories.toArray();
+    return getSuccessResponse(categories);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+// get all library items for add items
+export const getLibraryItemsIndexController: RouteHandler = async () => {
+  try {
+    const allitems = await DB.items.toArray();
+    const items = allitems.map((item: any) => ({
+      name: item.name,
+      category: item.category,
+      id: item.id,
+    }));
+    return getSuccessResponse(items);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+// add inspection items
+export const addInspectionItemsController: RouteHandler = async ({
+  request,
+}) => {
+  try {
+    const body = await request.json();
+
+    const id = await DB.inspectionItems.add(body);
+    if (!id) {
+      return getBadRequestResponse();
+    }
+    return getSuccessResponse({ message: "Item added successfully" });
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};

@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard, { dashboardLoader } from "../layout/Dashboard";
 import {
+  ADD_ITEMS,
   ADD_NOTES,
   ITEM_CATEGORIES,
   JOBS,
@@ -28,6 +29,7 @@ import Jobs from "../pages/Jobs/Jobs";
 import Job from "../pages/Jobs/Job";
 import AddNotes from "../pages/Jobs/AddNotes";
 import ViewNotes from "../pages/Jobs/ViewNotes";
+import AddItems from "../pages/Jobs/AddItems";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -62,6 +64,10 @@ export default createBrowserRouter([
       {
         path: VIEW_EDIT_NOTES,
         element: <ViewNotes />,
+      },
+      {
+        path: ADD_ITEMS,
+        element: <AddItems />,
       },
       {
         path: SETTINGS,

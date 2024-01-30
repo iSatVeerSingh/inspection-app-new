@@ -6,9 +6,12 @@ import {
 import { clientsClaim } from "workbox-core";
 import { NavigationRoute, registerRoute } from "workbox-routing";
 import {
+  addInspectionItemsController,
   addInspectionNoteByJobController,
   deleteInspectionNoteByJobController,
+  getAllCategoriesController,
   getJobsController,
+  getLibraryItemsIndexController,
   getNotesController,
   initCategoriesController,
   initItemsController,
@@ -112,6 +115,26 @@ registerRoute(
   ({ url }) => url.pathname === "/client/jobs/note",
   deleteInspectionNoteByJobController,
   "PUT"
+);
+
+// get categories
+registerRoute(
+  ({ url }) => url.pathname === "/client/categories",
+  getAllCategoriesController,
+  "GET"
+);
+// get items
+registerRoute(
+  ({ url }) => url.pathname === "/client/items-index",
+  getLibraryItemsIndexController,
+  "GET"
+);
+
+// Add inspection items
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs/inspection-items",
+  addInspectionItemsController,
+  "POST"
 );
 
 let allowlist: undefined | RegExp[];

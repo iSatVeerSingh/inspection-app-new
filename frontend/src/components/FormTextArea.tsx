@@ -17,7 +17,7 @@ type FormTextAreaProps = FormControlProps &
 
 const FormTextArea = (
   { inputError, label, id, isRequired, subLabel, ...props }: FormTextAreaProps,
-  ref: Ref<HTMLInputElement>
+  ref: Ref<HTMLTextAreaElement>
 ) => {
   return (
     <FormControl

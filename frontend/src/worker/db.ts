@@ -4,6 +4,10 @@ export class InspectionDatabase extends Dexie {
   items!: Table<any>;
   categories!: Table<any>;
   notes!: Table<any>;
+  recommendations!: Table<any>;
+  jobCategories!: Table<any>;
+  jobs!: Table<any>;
+  inspectionItems!: Table<any>;
 
   constructor() {
     super("inspection-db");
@@ -12,6 +16,10 @@ export class InspectionDatabase extends Dexie {
       items: "++id, [category+name], name",
       categories: "++id",
       notes: "++id, category",
+      recommendations: "++id",
+      jobCategories: "++id",
+      jobs: "++jobNumber, id, [status+category]",
+      inspectionItems: "++id, job_id, name, category, custom, previousItem",
     });
   }
 }

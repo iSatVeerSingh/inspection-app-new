@@ -8,6 +8,10 @@ import {
 import * as paths from "./paths";
 
 export default [
+  {
+    path: paths.JOBS,
+    name: "Jobs",
+  },
   // {
   //   path: paths.JOBS,
   //   name: "Jobs",

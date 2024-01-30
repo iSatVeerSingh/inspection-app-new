@@ -129,11 +129,77 @@ const Init = () => {
       setInstalling(false);
       return;
     }
+
+    setStatus("Fetching recommendations");
+    response = await inspectionApiAxios.get("/install-recommendations", {
+      onDownloadProgress(e) {
+        const downloadpr = Math.floor(e.progress! * 100);
+        setProgress(downloadpr);
+      },
+    });
+
+    if (response.status !== 200) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
+    initResponse = await clientApi.post("/init-recommendations", response.data);
+    if (!initResponse.success) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
+    setStatus("Fetching job categories");
+    response = await inspectionApiAxios.get("/install-job-categories", {
+      onDownloadProgress(e) {
+        const downloadpr = Math.floor(e.progress! * 100);
+        setProgress(downloadpr);
+      },
+    });
+
+    if (response.status !== 200) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
+    initResponse = await clientApi.post("/init-job-categories", response.data);
+    if (!initResponse.success) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
+    setStatus("Fetching initial jobs");
+    response = await inspectionApiAxios.get("/install-jobs", {
+      onDownloadProgress(e) {
+        const downloadpr = Math.floor(e.progress! * 100);
+        setProgress(downloadpr);
+      },
+    });
+
+    if (response.status !== 200) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
+    initResponse = await clientApi.post("/init-jobs", response.data);
+    if (!initResponse.success) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
+    setInstalling(false);
+    setInstalled(true);
   };
 
   return (
     <Center as="main" h={"100vh"} bg={"app-bg"} p={3}>
-      <Card w={"100%"} maxW={"600px"} px={5} py={5}>
+      <Card w={"100%"} maxW={"600px"} px={5} py={5} textAlign={"center"}>
         <Alert
           status="info"
           variant="subtle"
@@ -164,6 +230,19 @@ const Init = () => {
               {status}
             </Text>
             <Progress value={progress} mt={2} rounded={"full"} />
+          </Box>
+        )}
+
+        {!installing && installed && !error && (
+          <Box>
+            <Text>App successfully setup</Text>
+            <ButtonPrimary>Go To App</ButtonPrimary>
+          </Box>
+        )}
+
+        {!installing && !installed && error && (
+          <Box>
+            <Text color={"red"}>Error: {error}. Please try again</Text>
           </Box>
         )}
       </Card>

@@ -1,7 +1,7 @@
-// export const JOBS = "/jobs";
-// export const JOB_DETAILS = JOBS + "/:jobNumber";
-// export const ADD_NOTES = JOB_DETAILS + "/add-notes";
-// export const VIEW_EDIT_NOTES = JOB_DETAILS + "/all-notes";
+export const JOBS = "/jobs";
+export const JOB_DETAILS = JOBS + "/:jobNumber";
+export const ADD_NOTES = JOB_DETAILS + "/add-notes";
+export const VIEW_EDIT_NOTES = JOB_DETAILS + "/all-notes";
 // export const ADD_ITEMS = JOB_DETAILS + "/add-items";
 // export const VIEW_EDIT_ITEMS = JOB_DETAILS + "/all-items";
 // export const INSPECTION_ITEM_PREVIEW = VIEW_EDIT_ITEMS + "/:uuid";
@@ -35,4 +35,4 @@ export const ITEM_CATEGORIES = SETTINGS + "/categories";
 export const LIBRARY_NOTES = SETTINGS + "/notes";
 
 export const JOB_CATEGORIES = SETTINGS + "/job-categories";
-export const RECOMMENDATIONS = SETTINGS + "/recommendations"
+export const RECOMMENDATIONS = SETTINGS + "/recommendations";

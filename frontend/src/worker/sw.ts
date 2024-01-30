@@ -6,10 +6,18 @@ import {
 import { clientsClaim } from "workbox-core";
 import { NavigationRoute, registerRoute } from "workbox-routing";
 import {
+  addInspectionNoteByJobController,
+  deleteInspectionNoteByJobController,
+  getJobsController,
+  getNotesController,
   initCategoriesController,
   initItemsController,
+  initJobCategoriesController,
+  initJobsController,
   initNotesController,
+  initRecommendationsController,
   initUserController,
+  startInspectionController,
 } from "./controller";
 
 declare let self: ServiceWorkerGlobalScope;
@@ -44,6 +52,66 @@ registerRoute(
   ({ url }) => url.pathname === "/client/init-notes",
   initNotesController,
   "POST"
+);
+// Init recommendations
+registerRoute(
+  ({ url }) => url.pathname === "/client/init-recommendations",
+  initRecommendationsController,
+  "POST"
+);
+// Init job categories
+registerRoute(
+  ({ url }) => url.pathname === "/client/init-job-categories",
+  initJobCategoriesController,
+  "POST"
+);
+// Init jobs
+registerRoute(
+  ({ url }) => url.pathname === "/client/init-jobs",
+  initJobsController,
+  "POST"
+);
+
+// Get Jobs
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs",
+  getJobsController,
+  "GET"
+);
+
+// Start new inspection
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs",
+  startInspectionController,
+  "PUT"
+);
+
+// Get Jobs categories
+registerRoute(
+  ({ url }) => url.pathname === "/client/job-categories",
+  getJobsController,
+  "GET"
+);
+
+// get notes
+registerRoute(
+  ({ url }) => url.pathname === "/client/notes",
+  getNotesController,
+  "GET"
+);
+
+// Add Inspection note by job
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs/note",
+  addInspectionNoteByJobController,
+  "POST"
+);
+
+// Delete inspection note by job
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs/note",
+  deleteInspectionNoteByJobController,
+  "PUT"
 );
 
 let allowlist: undefined | RegExp[];

@@ -152,7 +152,25 @@ const Dashboard = () => {
                     )}
                   </Box>
                 ) : (
-                  <Flex key={index}></Flex>
+                  <Link key={index} to={item.path}>
+                    <Text
+                      alignItems={"center"}
+                      gap={2}
+                      px={3}
+                      py={2}
+                      borderRadius={"full"}
+                      bg={
+                        item.path === "/" + currentPath
+                          ? "primary.500"
+                          : "primary.50"
+                      }
+                      color={
+                        item.path === "/" + currentPath ? "white" : "text.700"
+                      }
+                    >
+                      {item.name}
+                    </Text>
+                  </Link>
                 )
 
               // <>

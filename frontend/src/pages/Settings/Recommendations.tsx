@@ -31,7 +31,7 @@ import {
 import DataNotFound from "../../components/DataNotFound";
 import { MoreIcon } from "../../icons";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 import FormTextArea from "../../components/FormTextArea";
 import { useSearchParams } from "react-router-dom";
 

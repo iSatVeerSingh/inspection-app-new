@@ -33,7 +33,7 @@ import DataNotFound from "../../components/DataNotFound";
 import { MoreIcon } from "../../icons";
 import FormInput from "../../components/FormInput";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 import FormTextArea from "../../components/FormTextArea";
 import { getChangedValues } from "../../utils/getChangedValues";
 

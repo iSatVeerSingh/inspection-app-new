@@ -7,7 +7,7 @@ import { Box, Flex, Grid, Heading, Text, useToast } from "@chakra-ui/react";
 import Loading from "../../components/Loading";
 import DataNotFound from "../../components/DataNotFound";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 
 const Job = () => {
   const { jobNumber } = useParams();
@@ -46,6 +46,43 @@ const Job = () => {
       return;
     }
     await getJob();
+  };
+
+  const demo = async () => {
+    const response = await fetch("/demo/report10.json");
+    const report = await response.json();
+
+    //   report.inspectionNotes?.forEach(async (note: string) => {
+    //     const response = await clientApi.post(
+    //       `/jobs/note?jobNumber=${jobNumber}`,
+    //       {
+    //         note,
+    //       }
+    //     );
+    //     console.log(response);
+    //   });
+
+    report.inspectionItems.forEach(async (item: any) => {
+      const category = item.itemName.split(":-")[0];
+      const name = item.itemName.split(":-")[1];
+      // const { success, data, error } = await clientApi.post(
+      //   "/jobs/inspection-items",
+      //   inspectionItem
+      // );
+      const response = await clientApi.post("/jobs/inspection-items", {
+        id: crypto.randomUUID(),
+        category: category,
+        name: name,
+        images: item.itemImages,
+        // library_item_id: ,
+        note: item.itemNote,
+        job_id: job.id,
+        custom: 0,
+        previousItem: 0,
+      });
+
+      console.log(response);
+    });
   };
 
   return (
@@ -184,6 +221,7 @@ const Job = () => {
                         </ButtonOuline>
                       </Flex>
                     </Box>
+                    {/* <ButtonOuline onClick={demo}>demo</ButtonOuline> */}
                   </>
                 )}
               </Card>

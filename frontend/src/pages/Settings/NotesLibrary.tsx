@@ -36,7 +36,7 @@ import { useGlobalContext } from "../../context/GlobalContext";
 import ButtonPrimary from "../../components/ButtonPrimary";
 import FormSelect from "../../components/FormSelect";
 import FormTextArea from "../../components/FormTextArea";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 import DataNotFound from "../../components/DataNotFound";
 import { MoreIcon } from "../../icons";
 

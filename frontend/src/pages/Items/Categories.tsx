@@ -32,7 +32,7 @@ import {
 import { MoreIcon } from "../../icons";
 import FormInput from "../../components/FormInput";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 
 const Categories = () => {
   const [loading, setLoading] = useState(true);

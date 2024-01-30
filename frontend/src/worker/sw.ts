@@ -10,6 +10,7 @@ import {
   addInspectionNoteByJobController,
   deleteInspectionNoteByJobController,
   getAllCategoriesController,
+  getAllInspectionItemsByJobController,
   getJobsController,
   getLibraryItemsIndexController,
   getNotesController,
@@ -135,6 +136,13 @@ registerRoute(
   ({ url }) => url.pathname === "/client/jobs/inspection-items",
   addInspectionItemsController,
   "POST"
+);
+
+// get all inspection items by job
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs/inspection-items",
+  getAllInspectionItemsByJobController,
+  "GET"
 );
 
 let allowlist: undefined | RegExp[];

@@ -31,7 +31,7 @@ import inspectionApi from "../../api/inspectionApi";
 import { getChangedValues } from "../../utils/getChangedValues";
 import { useNavigate } from "react-router-dom";
 import { CLEAR_EDITOR_COMMAND, LexicalEditor } from "lexical";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 
 type ItemFormProps = {
   categories: any;

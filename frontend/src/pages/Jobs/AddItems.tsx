@@ -23,7 +23,7 @@ import DatalistInput from "../../components/DatalistInput";
 import FileInput from "../../components/FileInput";
 import FormTextArea from "../../components/FormTextArea";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import ButtonOuline from "../../components/ButtonOuline";
+import ButtonOuline from "../../components/ButtonOutline";
 import { getResizedImagesBase64Main } from "../../utils/resizeimg";
 import FormInput from "../../components/FormInput";
 

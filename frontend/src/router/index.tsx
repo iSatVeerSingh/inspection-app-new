@@ -14,6 +14,7 @@ import {
   NEW_LIBRARY_ITEM,
   RECOMMENDATIONS,
   SETTINGS,
+  VIEW_EDIT_ITEMS,
   VIEW_EDIT_NOTES,
 } from "./paths";
 import Company from "../pages/Settings/Company";
@@ -30,6 +31,7 @@ import Job from "../pages/Jobs/Job";
 import AddNotes from "../pages/Jobs/AddNotes";
 import ViewNotes from "../pages/Jobs/ViewNotes";
 import AddItems from "../pages/Jobs/AddItems";
+import ViewItems from "../pages/Jobs/ViewItems";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -68,6 +70,10 @@ export default createBrowserRouter([
       {
         path: ADD_ITEMS,
         element: <AddItems />,
+      },
+      {
+        path: VIEW_EDIT_ITEMS,
+        element: <ViewItems />,
       },
       {
         path: SETTINGS,

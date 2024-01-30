@@ -33,7 +33,7 @@ import FormInput from "../components/FormInput";
 import FormSelect from "../components/FormSelect";
 import ButtonPrimary from "../components/ButtonPrimary";
 import { getChangedValues } from "../utils/getChangedValues";
-import ButtonOuline from "../components/ButtonOuline";
+import ButtonOuline from "../components/ButtonOutline";
 
 type UserForm = Partial<User> & { password?: string };
 

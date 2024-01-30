@@ -319,3 +319,84 @@ export const addInspectionItemsController: RouteHandler = async ({
     return getBadRequestResponse(err?.message);
   }
 };
+
+// get inspection items by job
+export const getAllInspectionItemsByJobController: RouteHandler = async ({
+  url,
+}) => {
+  try {
+    const jobNumber = url.searchParams.get("jobNumber");
+    if (!jobNumber) {
+      return getBadRequestResponse();
+    }
+
+    const page = url.searchParams.get("page");
+    const name = url.searchParams.get("name");
+
+    const category = url.searchParams.get("category");
+
+    const perPage = 15;
+    const pageNumber = Number(page);
+    const skip = pageNumber === 0 ? 0 : (pageNumber - 1) * perPage;
+
+    const transaction = await DB.transaction(
+      "rw",
+      DB.jobs,
+      DB.inspectionItems,
+      async () => {
+        const job = await DB.jobs.get(jobNumber);
+        if (!job) {
+          return null;
+        }
+        const dbQuery = {
+          job_id: job.id,
+          previousItem: 0,
+          ...(category ? { category } : {}),
+        };
+
+        const itemsCollection = DB.inspectionItems.where(dbQuery);
+        if (name) {
+          const allItems = await itemsCollection.toArray();
+          const filteredItems = allItems.filter((item: any) =>
+            item.name.toLowerCase().includes(name.toLowerCase())
+          );
+          return {
+            data: filteredItems,
+            pages: {
+              current_page: 1,
+              next: null,
+              prev: null,
+            },
+          };
+        }
+
+        const total = await itemsCollection.count();
+        const totalPages =
+          total % perPage === 0 ? total / perPage : Math.ceil(total / perPage);
+
+        const items = await itemsCollection
+          .offset(skip)
+          .limit(perPage)
+          .toArray();
+
+        const current_page = pageNumber === 0 ? 1 : pageNumber;
+        return {
+          data: items,
+          pages: {
+            current_page,
+            next: current_page < totalPages ? current_page + 1 : null,
+            prev: current_page > 1 ? current_page - 1 : null,
+          },
+        };
+      }
+    );
+
+    if (!transaction) {
+      return getBadRequestResponse();
+    }
+
+    return getSuccessResponse(transaction);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};

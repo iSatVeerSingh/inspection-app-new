@@ -8,6 +8,7 @@ import { NavigationRoute, registerRoute } from "workbox-routing";
 import {
   addInspectionItemsController,
   addInspectionNoteByJobController,
+  deleteInspectionItemController,
   deleteInspectionNoteByJobController,
   getAllCategoriesController,
   getAllInspectionItemsByJobController,
@@ -143,6 +144,12 @@ registerRoute(
   ({ url }) => url.pathname === "/client/jobs/inspection-items",
   getAllInspectionItemsByJobController,
   "GET"
+);
+// delete item by job
+registerRoute(
+  ({ url }) => url.pathname === "/client/jobs/inspection-items",
+  deleteInspectionItemController,
+  "DELETE"
 );
 
 let allowlist: undefined | RegExp[];

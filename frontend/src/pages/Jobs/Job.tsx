@@ -49,6 +49,8 @@ const Job = () => {
   };
 
   const demo = async () => {
+    const { data: libItems } = await clientApi.get("/items-index");
+
     const response = await fetch("/demo/report10.json");
     const report = await response.json();
 
@@ -69,12 +71,14 @@ const Job = () => {
       //   "/jobs/inspection-items",
       //   inspectionItem
       // );
+
+      const libItem = libItems.find((temp: any) => temp.name === name);
       const response = await clientApi.post("/jobs/inspection-items", {
         id: crypto.randomUUID(),
         category: category,
         name: name,
         images: item.itemImages,
-        // library_item_id: ,
+        library_item_id: libItem.id,
         note: item.itemNote,
         job_id: job.id,
         custom: 0,

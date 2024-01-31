@@ -156,7 +156,7 @@ export const getJobsController: RouteHandler = async ({ url }) => {
       return getSuccessResponse(transaction);
     }
 
-    const jobs = await DB.jobs.toArray();
+    const jobs = await DB.jobs.orderBy("startsAt").toArray();
     return getSuccessResponse(jobs);
   } catch (err: any) {
     return getBadRequestResponse(err);
@@ -325,6 +325,37 @@ export const getAllInspectionItemsByJobController: RouteHandler = async ({
   url,
 }) => {
   try {
+    const id = url.searchParams.get("id");
+    if (id) {
+      const transaction = await DB.transaction(
+        "rw",
+        DB.inspectionItems,
+        DB.items,
+        async () => {
+          const inspectionItem = await DB.inspectionItems.get(id);
+          if (!inspectionItem) {
+            return null;
+          }
+          if (inspectionItem.custom === 0 && inspectionItem.library_item_id) {
+            const libraryItem = await DB.items.get(
+              inspectionItem.library_item_id
+            );
+            if (libraryItem) {
+              inspectionItem.summary = libraryItem.summary;
+              inspectionItem.embeddedImages = libraryItem.embeddedImages;
+            }
+          }
+
+          return inspectionItem;
+        }
+      );
+
+      if (!transaction) {
+        return getBadRequestResponse();
+      }
+      return getSuccessResponse(transaction);
+    }
+
     const jobNumber = url.searchParams.get("jobNumber");
     if (!jobNumber) {
       return getBadRequestResponse();
@@ -396,6 +427,23 @@ export const getAllInspectionItemsByJobController: RouteHandler = async ({
     }
 
     return getSuccessResponse(transaction);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+// delete inspection item
+export const deleteInspectionItemController: RouteHandler = async ({ url }) => {
+  try {
+    const id = url.searchParams.get("id");
+    if (!id) {
+      return getBadRequestResponse();
+    }
+
+    await DB.inspectionItems.delete(id);
+    return getSuccessResponse({
+      message: "Inspection item deleted successfully",
+    });
   } catch (err: any) {
     return getBadRequestResponse(err?.message);
   }

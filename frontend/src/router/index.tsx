@@ -4,6 +4,7 @@ import Dashboard, { dashboardLoader } from "../layout/Dashboard";
 import {
   ADD_ITEMS,
   ADD_NOTES,
+  INSPECTION_ITEM_PREVIEW,
   ITEM_CATEGORIES,
   JOBS,
   JOB_CATEGORIES,
@@ -32,6 +33,7 @@ import AddNotes from "../pages/Jobs/AddNotes";
 import ViewNotes from "../pages/Jobs/ViewNotes";
 import AddItems from "../pages/Jobs/AddItems";
 import ViewItems from "../pages/Jobs/ViewItems";
+import ItemPreview from "../pages/Jobs/ItemPreview";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -74,6 +76,10 @@ export default createBrowserRouter([
       {
         path: VIEW_EDIT_ITEMS,
         element: <ViewItems />,
+      },
+      {
+        path: INSPECTION_ITEM_PREVIEW,
+        element: <ItemPreview />,
       },
       {
         path: SETTINGS,

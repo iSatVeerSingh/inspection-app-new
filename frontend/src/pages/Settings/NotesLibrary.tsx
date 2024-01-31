@@ -398,7 +398,7 @@ const NotesLibrary = () => {
       <AlertDialog
         isOpen={isOpenAlert}
         leastDestructiveRef={cancelRef}
-        onClose={onClose}
+        onClose={onCloseAlert}
         closeOnOverlayClick={false}
       >
         <AlertDialogOverlay>

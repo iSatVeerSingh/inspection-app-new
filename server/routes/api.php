@@ -47,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/install-items', [ItemController::class, 'install']);
   Route::get('/install-recommendations', [RecommendationController::class, 'install']);
   Route::get('/install-job-categories', [JobCategoryController::class, 'install']);
-  Route::get('/install-jobs', [JobController::class, 'install']);
+  Route::get('/install-jobs', [JobController::class, 'syncJobs']);
 
   Route::post('/suggest-note', [NoteController::class, 'suggestNote']);
   Route::post('/suggest-item', [ItemController::class, 'suggestItem']);
@@ -55,4 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/company', [CompanyController::class, 'index']);
 
   Route::put('/company', [CompanyController::class, 'update'])->middleware(EnsureUserIsOwner::class);
+
+  Route::post('/sync-inspection-items', [JobController::class, 'syncInspectionItems']);
+  Route::get('/sync-jobs', [JobController::class, 'syncJobs']);
 });

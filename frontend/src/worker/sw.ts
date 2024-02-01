@@ -8,6 +8,7 @@ import { NavigationRoute, registerRoute } from "workbox-routing";
 import {
   addInspectionItemsController,
   addInspectionNoteByJobController,
+  addRecommendationByJobController,
   deleteInspectionItemController,
   deleteInspectionNoteByJobController,
   getAllCategoriesController,
@@ -15,6 +16,7 @@ import {
   getJobsController,
   getLibraryItemsIndexController,
   getNotesController,
+  getRecommendationsController,
   initCategoriesController,
   initItemsController,
   initJobCategoriesController,
@@ -22,8 +24,11 @@ import {
   initNotesController,
   initRecommendationsController,
   initUserController,
+  removeRecommendationController,
   startInspectionController,
 } from "./controller";
+import { DB } from "./db";
+import serverApi from "./api";
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -151,6 +156,101 @@ registerRoute(
   deleteInspectionItemController,
   "DELETE"
 );
+
+// get all recommendations
+registerRoute(
+  ({ url }) => url.pathname === "/client/recommendations",
+  getRecommendationsController,
+  "GET"
+);
+
+// add recommendation
+registerRoute(
+  ({ url }) => url.pathname === "/client/recommendations",
+  addRecommendationByJobController,
+  "POST"
+);
+
+// remove recommendation
+registerRoute(
+  ({ url }) => url.pathname === "/client/recommendations",
+  removeRecommendationController,
+  "DELETE"
+);
+
+const syncJobandInspectionItems = async () => {
+  console.log("sync function run", new Date());
+  if (!navigator.onLine) {
+    return;
+  }
+
+  const sync = await DB.sync.get("sync");
+  if (!sync) {
+    console.log("not sync");
+    return;
+  }
+
+  const currentTime = Date.now();
+  if (currentTime - sync.lastSync < 1000 * 15) {
+    return;
+  }
+
+  const inProgressJobs = await DB.jobs
+    .where("status")
+    .equals("In Progress")
+    .toArray();
+
+  for (let i = 0; i < inProgressJobs.length; i++) {
+    const job = inProgressJobs[i];
+
+    const allInspectionItemsNotSynced = await DB.inspectionItems
+      .where("sync")
+      .equals(job.id)
+      .toArray();
+
+    if (allInspectionItemsNotSynced.length === 0) {
+      return;
+    }
+
+    let itemsTosync = allInspectionItemsNotSynced;
+    if (allInspectionItemsNotSynced.length > 5) {
+      itemsTosync = allInspectionItemsNotSynced.slice(0, 5);
+    }
+
+    const { success, error, data } = await serverApi.post(
+      "/sync-inspection-items",
+      {
+        job: job.id,
+        inspectionItems: itemsTosync,
+      }
+    );
+    if (!success) {
+      console.log(error);
+      return;
+    }
+
+    const syncedItemsIds = data;
+    if (!Array.isArray(syncedItemsIds)) {
+      break;
+    }
+    const updated = await DB.inspectionItems
+      .where("id")
+      .anyOf(syncedItemsIds)
+      .modify((item: any) => {
+        item.sync = "Synced Online";
+      });
+
+    console.log(syncedItemsIds);
+
+    await DB.sync.put({ lastSync: currentTime, type: "sync" }, "sync");
+
+    // console.log(itemsTosync);
+  }
+};
+
+setInterval(() => {
+  syncJobandInspectionItems();
+}, 1000 * 17);
 
 let allowlist: undefined | RegExp[];
 if (import.meta.env.DEV) allowlist = [/^\/$/];

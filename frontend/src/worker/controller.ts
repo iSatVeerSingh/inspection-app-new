@@ -448,3 +448,53 @@ export const deleteInspectionItemController: RouteHandler = async ({ url }) => {
     return getBadRequestResponse(err?.message);
   }
 };
+
+export const getRecommendationsController: RouteHandler = async () => {
+  try {
+    const recommendations = await DB.recommendations.toArray();
+    return getSuccessResponse(recommendations);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+export const addRecommendationByJobController: RouteHandler = async ({
+  request,
+  url,
+}) => {
+  try {
+    const jobNumber = url.searchParams.get("jobNumber");
+    if (!jobNumber) {
+      return getBadRequestResponse();
+    }
+
+    const body = await request.json();
+
+    const updated = await DB.jobs.update(jobNumber, body);
+    if (updated === 0) {
+      return getBadRequestResponse("Job not found");
+    }
+    return getSuccessResponse({ message: "Recommendation added successfully" });
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+export const removeRecommendationController: RouteHandler = async ({ url }) => {
+  try {
+    const jobNumber = url.searchParams.get("jobNumber");
+    if (!jobNumber) {
+      return getBadRequestResponse();
+    }
+
+    const updated = await DB.jobs.update(jobNumber, { recommendation: null });
+    if (updated === 0) {
+      return getBadRequestResponse("Job not found");
+    }
+    return getSuccessResponse({
+      message: "Recommendation removed successfully",
+    });
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};

@@ -57,7 +57,7 @@ const Init = () => {
 
     const user = localStorage.getItem("user");
     if (user) {
-      const userResponse = await clientApi.post("/init-user", user);
+      const userResponse = await clientApi.post("/init-user", JSON.parse(user));
       if (!userResponse.success) {
         navigate("/login");
         return;

@@ -60,10 +60,16 @@ const Dashboard = () => {
 
     window.addEventListener("online", setOnline);
     window.addEventListener("offline", setOffline);
+    const dashboardChannel = new BroadcastChannel("dashboard_channel");
+
+    dashboardChannel.addEventListener("message", (e) => {
+      console.log(e.data);
+    });
 
     return () => {
       window.removeEventListener("online", setOnline);
       window.removeEventListener("offline", setOffline);
+      dashboardChannel.close();
     };
   }, []);
 

@@ -1,20 +1,43 @@
 import { useNavigate, useParams } from "react-router-dom";
 import Card from "../../components/Card";
 import PageLayout from "../../layout/PageLayout";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clientApi from "../../api/clientApi";
-import { Box, Flex, Grid, Heading, Text, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Grid,
+  Heading,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
 import Loading from "../../components/Loading";
 import DataNotFound from "../../components/DataNotFound";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import ButtonOuline from "../../components/ButtonOutline";
+import { DB } from "../../worker/db";
+import inspectionApi from "../../api/inspectionApi";
+import DatalistInput from "../../components/DatalistInput";
+import ButtonOutline from "../../components/ButtonOutline";
+// reports@correctinspections.com.au
 
 const Job = () => {
   const { jobNumber } = useParams();
   const [loading, setLoading] = useState(true);
   const [job, setJob] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const toast = useToast();
   const navigate = useNavigate();
+  const { onOpen, onClose, isOpen } = useDisclosure();
+  const recommendationRef = useRef<HTMLInputElement>(null);
+
   const getJob = async () => {
     setLoading(true);
     const { success, data, error } = await clientApi.get(
@@ -25,6 +48,12 @@ const Job = () => {
       return;
     }
     setJob(data);
+
+    const response = await clientApi.get("/recommendations");
+    if (response.success) {
+      const allRecommendations = response.data.map((item: any) => item);
+      setRecommendations(allRecommendations);
+    }
     setLoading(false);
   };
 
@@ -48,45 +77,54 @@ const Job = () => {
     await getJob();
   };
 
-  const demo = async () => {
-    const { data: libItems } = await clientApi.get("/items-index");
+  const addRecommendation = async () => {
+    if (recommendationRef.current) {
+      const recommendation = recommendationRef.current.value.trim();
+      if (!recommendation || recommendation === "") {
+        return;
+      }
 
-    const response = await fetch("/demo/report10.json");
-    const report = await response.json();
-
-    //   report.inspectionNotes?.forEach(async (note: string) => {
-    //     const response = await clientApi.post(
-    //       `/jobs/note?jobNumber=${jobNumber}`,
-    //       {
-    //         note,
-    //       }
-    //     );
-    //     console.log(response);
-    //   });
-
-    report.inspectionItems.forEach(async (item: any) => {
-      const category = item.itemName.split(":-")[0];
-      const name = item.itemName.split(":-")[1];
-      // const { success, data, error } = await clientApi.post(
-      //   "/jobs/inspection-items",
-      //   inspectionItem
-      // );
-
-      const libItem = libItems.find((temp: any) => temp.name === name);
-      const response = await clientApi.post("/jobs/inspection-items", {
-        id: crypto.randomUUID(),
-        category: category,
-        name: name,
-        images: item.itemImages,
-        library_item_id: libItem.id,
-        note: item.itemNote,
-        job_id: job.id,
-        custom: 0,
-        previousItem: 0,
+      const { success, data, error } = await clientApi.post(
+        `/recommendations?jobNumber=${jobNumber}`,
+        { recommendation }
+      );
+      if (!success) {
+        toast({
+          title: error,
+          duration: 4000,
+          status: "error",
+        });
+        return;
+      }
+      toast({
+        title: data.message,
+        duration: 4000,
+        status: "success",
       });
+      onClose();
+      await getJob();
+    }
+  };
 
-      console.log(response);
+  const removeRecommendation = async () => {
+    const { success, data, error } = await clientApi.delete(
+      `/recommendations?jobNumber=${jobNumber}`
+    );
+    if (!success) {
+      toast({
+        title: error,
+        duration: 4000,
+        status: "error",
+      });
+      return;
+    }
+    toast({
+      title: data.message,
+      duration: 4000,
+      status: "success",
     });
+    onClose();
+    await getJob();
   };
 
   return (
@@ -185,12 +223,12 @@ const Job = () => {
                         >
                           Add Notes
                         </ButtonPrimary>
-                        <ButtonOuline
+                        <ButtonOutline
                           minW={"200px"}
                           onClick={() => navigate("./all-notes")}
                         >
                           View Notes
-                        </ButtonOuline>
+                        </ButtonOutline>
                       </Flex>
                     </Box>
                     <Box>
@@ -199,7 +237,7 @@ const Job = () => {
                       </Heading>
                       <Flex alignItems={"center"} gap={2} mt={2}>
                         <Text fontSize={"lg"} minW={"200px"}>
-                          Total items from current report
+                          Total items from current r eport
                         </Text>
                         <Text
                           color={"text.600"}
@@ -217,15 +255,34 @@ const Job = () => {
                         >
                           Add Items
                         </ButtonPrimary>
-                        <ButtonOuline
+                        <ButtonOutline
                           minW={"200px"}
                           onClick={() => navigate("./all-items")}
                         >
                           View Items
-                        </ButtonOuline>
+                        </ButtonOutline>
                       </Flex>
                     </Box>
-                    {/* <ButtonOuline onClick={demo}>demo</ButtonOuline> */}
+                    <Box mt={2}>
+                      <Heading as="h3" fontSize={"xl"} color={"text.700"}>
+                        Recommendation
+                      </Heading>
+
+                      {job?.recommendation && job.recommendation !== "" ? (
+                        <Box>
+                          <Text>{job?.recommendation}</Text>
+                          <ButtonOutline onClick={removeRecommendation}>
+                            Remove Recommendation
+                          </ButtonOutline>
+                        </Box>
+                      ) : (
+                        <Box>
+                          <ButtonPrimary onClick={onOpen}>
+                            Add Recommendation
+                          </ButtonPrimary>
+                        </Box>
+                      )}
+                    </Box>
                   </>
                 )}
               </Card>
@@ -235,6 +292,32 @@ const Job = () => {
           )}
         </>
       )}
+
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        closeOnOverlayClick={false}
+        size={"lg"}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Add Recommendation</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <DatalistInput
+              dataList={recommendations}
+              id="recommendations"
+              ref={recommendationRef}
+            />
+          </ModalBody>
+          <ModalFooter gap={2}>
+            <ButtonPrimary onClick={addRecommendation}>
+              Add Recommendation
+            </ButtonPrimary>
+            <ButtonOutline onClick={onClose}>Cancel</ButtonOutline>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </PageLayout>
   );
 };

@@ -8,10 +8,11 @@ export class InspectionDatabase extends Dexie {
   jobCategories!: Table<any>;
   jobs!: Table<any>;
   inspectionItems!: Table<any>;
+  sync!: Table<any>;
 
   constructor() {
     super("inspection-db");
-    this.version(5).stores({
+    this.version(7).stores({
       user: "++type",
       items: "++id, [category+name], name",
       categories: "++id",
@@ -20,7 +21,8 @@ export class InspectionDatabase extends Dexie {
       jobCategories: "++id",
       jobs: "++jobNumber, id, [status+category], startsAt",
       inspectionItems:
-        "++id, job_id, name, category, custom, previousItem, [job_id+previousItem+category]",
+        "++id, job_id, name, category, custom, previousItem, sync, [job_id+previousItem+category]",
+      sync: "++type, lastSync",
     });
   }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\JobCollection;
 use App\Models\InspectionItem;
 use App\Models\Job;
+use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -31,20 +32,32 @@ class JobController extends Controller
     {
         $data = $request->all();
 
-        $jobId = $data['job'];
+        $jobId = $data['job_id'];
+        $reportId = $data['report_id'];
         $currentJob = Job::find($jobId);
+
         $currentJob->update(['status' => 'In Progress']);
         $inspectionItems = $data['inspectionItems'];
 
         $createdInspectionItems = [];
 
+        if (!Report::find($reportId)) {
+            $report = new Report();
+            $customer_id = $currentJob->customer->id;
+
+            $report['id'] = $reportId;
+            $report['job_id'] = $jobId;
+            $report['customer_id'] = $customer_id;
+
+            $report->save();
+        }
 
         foreach ($inspectionItems as $inspectionItem) {
             if (!InspectionItem::find($inspectionItem['id'])) {
                 $newItem = new InspectionItem([
                     'id' => $inspectionItem['id'],
                     'name' => $inspectionItem['name'],
-                    'job_id' => $inspectionItem['job_id'],
+                    'report_id' => $inspectionItem['report_id'],
                     'images' => $inspectionItem['images'],
                     'note' => $inspectionItem['note'],
                 ]);

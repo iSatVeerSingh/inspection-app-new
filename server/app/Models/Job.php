@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Job extends Model
 {
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'active',
         'jobNumber',
         'category_id',
         'customer_id',
@@ -26,7 +26,6 @@ class Job extends Model
     ];
 
     protected $casts = [
-        'active' => 'boolean',
         'startsAt' => 'datetime',
         'completedAt' => 'datetime',
     ];
@@ -64,5 +63,15 @@ class Job extends Model
     public function inspector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'inspector_id');
+    }
+
+    /**
+     * Get all of the reports for the Job
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'job_id');
     }
 }

@@ -12,7 +12,6 @@ class Customer extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'active',
         'nameOnReport',
         'name',
         'email',
@@ -25,11 +24,6 @@ class Customer extends Model
         'supervisorEmail',
         'supervisorPhone'
     ];
-
-    protected $casts = [
-        'active' => "boolean",
-    ];
-
     /**
      * Get all of the jobs for the Customer
      *
@@ -38,5 +32,15 @@ class Customer extends Model
     public function jobs(): HasMany
     {
         return $this->hasMany(Job::class, 'customer_id');
+    }
+
+    /**
+     * Get all of the reports for the Customer
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'customer_id');
     }
 }

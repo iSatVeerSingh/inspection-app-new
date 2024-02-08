@@ -22,10 +22,10 @@ import {
 import Loading from "../../components/Loading";
 import DataNotFound from "../../components/DataNotFound";
 import ButtonPrimary from "../../components/ButtonPrimary";
-import { DB } from "../../worker/db";
-import inspectionApi from "../../api/inspectionApi";
 import DatalistInput from "../../components/DatalistInput";
 import ButtonOutline from "../../components/ButtonOutline";
+import serverApi from "../../worker/api";
+import { DB } from "../../worker/db";
 // reports@correctinspections.com.au
 
 const Job = () => {
@@ -40,7 +40,7 @@ const Job = () => {
 
   const getJob = async () => {
     setLoading(true);
-    const { success, data, error } = await clientApi.get(
+    const { success, data } = await clientApi.get(
       `/jobs?jobNumber=${jobNumber}`
     );
     if (!success) {
@@ -237,7 +237,7 @@ const Job = () => {
                       </Heading>
                       <Flex alignItems={"center"} gap={2} mt={2}>
                         <Text fontSize={"lg"} minW={"200px"}>
-                          Total items from current r eport
+                          Total items from current report
                         </Text>
                         <Text
                           color={"text.600"}

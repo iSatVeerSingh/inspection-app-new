@@ -141,7 +141,8 @@ const AddItems = () => {
       images: resizedImages,
       library_item_id: libItem.id,
       note: itemData.note,
-      job_id: job.id,
+      report_id: job.report_id,
+      sync: job.report_id,
       custom: 0,
       previousItem: 0,
     };

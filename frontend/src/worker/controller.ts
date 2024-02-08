@@ -106,6 +106,20 @@ export const initJobCategoriesController: RouteHandler = async ({
     return getBadRequestResponse();
   }
 };
+
+// setup sync
+export const initSyncController: RouteHandler = async () => {
+  try {
+    await DB.sync.add({
+      type: "sync",
+      lastSync: Date.now(),
+    });
+    return getSuccessResponse({ message: "Sync successfully setup" });
+  } catch (err: any) {
+    return getBadRequestResponse();
+  }
+};
+
 // setup jobs
 export const initJobsController: RouteHandler = async ({ request }) => {
   const jobs = await request.json();
@@ -139,9 +153,16 @@ export const getJobsController: RouteHandler = async ({ url }) => {
             return null;
           }
 
+          if (!job.report_id) {
+            return {
+              ...job,
+              inspectionItems: 0,
+            };
+          }
+
           const inspectionItems = await DB.inspectionItems
-            .where("job_id")
-            .equals(job.id)
+            .where("report_id")
+            .equals(job.report_id)
             .count();
           return {
             ...job,
@@ -183,6 +204,7 @@ export const startInspectionController: RouteHandler = async ({ url }) => {
   try {
     const isUpdated = await DB.jobs.update(jobNumber, {
       status: "In Progress",
+      report_id: crypto.randomUUID(),
     });
     if (isUpdated === 0) {
       return getBadRequestResponse("Job Not Found");
@@ -380,7 +402,7 @@ export const getAllInspectionItemsByJobController: RouteHandler = async ({
           return null;
         }
         const dbQuery = {
-          job_id: job.id,
+          report_id: job.report_id,
           previousItem: 0,
           ...(category ? { category } : {}),
         };
@@ -441,6 +463,7 @@ export const deleteInspectionItemController: RouteHandler = async ({ url }) => {
     }
 
     await DB.inspectionItems.delete(id);
+    await DB.deletedItems.add({ id });
     return getSuccessResponse({
       message: "Inspection item deleted successfully",
     });

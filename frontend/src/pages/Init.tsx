@@ -193,6 +193,13 @@ const Init = () => {
       return;
     }
 
+    initResponse = await clientApi.post("/init-sync", null);
+    if (!initResponse.success) {
+      setError(response.data.message || "Something went wrong");
+      setInstalling(false);
+      return;
+    }
+
     setInstalling(false);
     setInstalled(true);
   };

@@ -13,6 +13,7 @@ class InspectionItem extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'name',
         'job_id',
         'library_item_id',

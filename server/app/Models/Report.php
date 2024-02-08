@@ -14,9 +14,11 @@ class Report extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'id',
         'job_id',
         'customer_id',
         'inspectionNotes',
+        'recommendation',
         'completedAt',
         'pdf'
     ];

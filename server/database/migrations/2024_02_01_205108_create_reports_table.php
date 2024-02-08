@@ -16,8 +16,9 @@ return new class extends Migration
             $table->foreignUuid('job_id')->constrained('jobs');
             $table->foreignUuid('customer_id')->constrained('customers');
             $table->json('inspectionNotes')->nullable();
+            $table->text('recommendation')->nullable();
             $table->dateTime('completedAt')->nullable();
-            $table->binary('pdf');
+            $table->binary('pdf')->nullable();
             $table->timestamps();
         });
     }

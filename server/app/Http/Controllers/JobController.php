@@ -37,30 +37,38 @@ class JobController extends Controller
         $currentJob = Job::find($jobId);
 
         $currentJob->update(['status' => 'In Progress']);
-        $inspectionItems = $data['inspectionItems'];
 
-        $createdInspectionItems = [];
+        $report = Report::find($reportId);
 
-        if (!Report::find($reportId)) {
-            $report = new Report();
-            $customer_id = $currentJob->customer->id;
-
-            $report['id'] = $reportId;
-            $report['job_id'] = $jobId;
-            $report['customer_id'] = $customer_id;
+        if (!$report) {
+            $report = new Report([
+                'id' => $reportId,
+                'job_id' => $jobId,
+                'customer_id' => $currentJob->customer->id
+            ]);
 
             $report->save();
         }
+
+        $deletedItems = $data['deletedItems'];
+        if (is_array($deletedItems) && count($deletedItems) > 0) {
+            InspectionItem::destroy($deletedItems);
+        }
+
+        $inspectionItems = $data['inspectionItems'];
+
+        $createdInspectionItems = [];
 
         foreach ($inspectionItems as $inspectionItem) {
             if (!InspectionItem::find($inspectionItem['id'])) {
                 $newItem = new InspectionItem([
                     'id' => $inspectionItem['id'],
                     'name' => $inspectionItem['name'],
-                    'report_id' => $inspectionItem['report_id'],
                     'images' => $inspectionItem['images'],
                     'note' => $inspectionItem['note'],
                 ]);
+
+                $newItem['report_id'] = $report->id;
 
                 if (array_key_exists('library_item_id', $inspectionItem)) {
                     $newItem['library_item_id'] = $inspectionItem['library_item_id'];
@@ -95,5 +103,40 @@ class JobController extends Controller
         }
 
         return response()->json($createdInspectionItems, Response::HTTP_CREATED);
+    }
+
+    public function finishReport(Request $request)
+    {
+        $data = $request->all();
+
+        $jobId = $data['job_id'];
+        $reportId = $data['report_id'];
+        $inspectionNotes = $data['inspectionNotes'];
+        $recommendation = $data['recommendation'];
+
+        $currentJob = Job::find($jobId);
+
+        $report = Report::find($reportId);
+
+        $report->update([
+            'inspectionNotes' => $inspectionNotes,
+            'recommendation' => $recommendation
+        ]);
+
+        return ['message' => 'report finished successfully'];
+
+
+
+        // if (!$report) {
+        //     $report = new Report([
+        //         'id' => $reportId,
+        //         'job_id' => $jobId,
+        //         'customer_id' => $currentJob->customer->id,
+        //         'inspectionNotes' => $inspectionNotes,
+        //         'recommendation' => $recommendation
+        //     ]);
+
+        //     $report->save();
+        // }
     }
 }

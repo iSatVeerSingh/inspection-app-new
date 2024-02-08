@@ -58,4 +58,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
   Route::post('/sync-inspection-items', [JobController::class, 'syncInspectionItems']);
   Route::get('/sync-jobs', [JobController::class, 'syncJobs']);
+  Route::post('/finish-report', [JobController::class, 'finishReport']);
 });

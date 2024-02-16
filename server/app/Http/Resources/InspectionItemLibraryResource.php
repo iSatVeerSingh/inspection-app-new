@@ -14,9 +14,26 @@ class InspectionItemLibraryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // return parent::toArray($request);
-        $data = parent::toArray($request);
-        $data['libraryItem'] = $this->libraryItem;
+        $data = [
+            "id" => $this->id,
+            "name" => $this->name,
+            "report_id" => $this->report_id,
+            "library_item_id" => $this->library_item_id,
+            "images" => $this->images,
+            "note" => $this->note,
+            "height" => $this->height,
+        ];
+
+        if($this->custom) {
+            $data['openingParagraph'] = $this->openingParagraph;
+            $data['closingParagraph'] = $this->closingParagraph;
+            $data['embeddedImage'] = $this->embeddedImage;
+        }
+
+        $data['summary'] = $this->libraryItem['summary'];
+        // // return parent::toArray($request);
+        // $data = parent::toArray($request);
+        // $data['summary'] = $this->libraryItem['summary'];
         return $data;
     }
 }

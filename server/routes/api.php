@@ -65,5 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('/finish-report', [JobController::class, 'finishReport']);
 });
 
+Route::get('/report/{reportId}/{pdfname}', [JobController::class, 'getReportPdf']);
+
 
 Route::get('/demo/{customerId}', [JobController::class, 'previousJobByCustomer']);

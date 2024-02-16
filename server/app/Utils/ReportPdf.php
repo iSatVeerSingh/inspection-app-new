@@ -34,7 +34,7 @@ class ReportPdf extends TCPDF
   {
     $this->setFont('', "", 9);
     $this->setTextColor(0, 32, 96);
-    $this->Text(50, -30, $this->jobNumber . " - " . $this->jobType . " - Inspection Report", 0, false);
+    $this->Text(50, -20, $this->jobNumber . " - " . $this->jobType . " - Inspection Report", 0, false);
   }
 
   protected function TitlePage(Job $job, mixed $template)
@@ -154,7 +154,9 @@ class ReportPdf extends TCPDF
     // $this->logo = $template['images']['logoImage'];
 
     $customer = $job->customer;
-    // disable header and footer
+    $this->setAuthor($job->inspector['first'] . " " . $job->inspector['last']);
+    $this->setCreator('Correct Inspections');
+    $this->setTitle($this->jobNumber . " - " . $this->jobType . " - Inspection Report");
     $this->setMargins(50, 50, 50);
     $this->setPrintFooter(false);
     $this->setAutoPageBreak(false);

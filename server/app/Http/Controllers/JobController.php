@@ -9,6 +9,7 @@ use App\Models\InspectionItem;
 use App\Models\Job;
 use App\Models\Report;
 use App\Utils\ReportPdf;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -35,8 +36,17 @@ class JobController extends Controller
 
     public function previousJobByCustomer(Request $request, string $customerId)
     {
-        $report = Report::where('customer_id', $customerId)->orderBy('updated_at', 'desc')->first();
-        return $report;
+        $report = Report::where('customer_id', $customerId)->select()->orderBy('updated_at', 'desc')->first();
+        $inspectionItems = InspectionItemLibraryResource::collection($report->inspectionItems)->toArray($request);
+
+        $reportData = [
+            "id" => $report['id'],
+            "completedAt" => $report['completedAt'],
+            "customer_id" => $report['customer_id'],
+            "jobNumber" => $report->job['jobNumber'],
+            "inspectionItems" => $inspectionItems
+        ];
+        return $reportData;
     }
 
     public function syncInspectionItems(Request $request)
@@ -148,6 +158,29 @@ class JobController extends Controller
             return response()->json(['message' => 'Couln\'t send pdf. Something went wrong'], Response::HTTP_BAD_REQUEST);
         }
 
-        return response()->json(['Pdf has been sent']);
+        $completedAt = new DateTime();
+
+        $report->update(['completedAt' => $completedAt]);
+        $$currentJob->update(['status' => 'Completed', 'completedAt' => $completedAt]);
+
+        return response()->json([
+            'message' => "Report generated successfully",
+            'report_id' => $report['id']
+        ]);
+    }
+
+    public function getReportPdf(string $reportId, string $pdfname)
+    {
+        $report = Report::find($reportId);
+        if (!$report) {
+            return response()->json(['message' => "Report not found"], Response::HTTP_BAD_REQUEST);
+        }
+
+        $pdfblob = base64_decode($report['pdf']);
+
+        return response($pdfblob, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $pdfname . '"',
+        ]);
     }
 }

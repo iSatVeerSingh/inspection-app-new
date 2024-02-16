@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -16,9 +17,11 @@ class ReportCompleted extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
-    {
-        //
+    public function __construct(
+        public mixed $pdf,
+        public mixed $job,
+        public string $inspector
+    ) {
     }
 
     /**
@@ -27,7 +30,7 @@ class ReportCompleted extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Report Completed',
+            subject: 'A New Report Completed',
         );
     }
 
@@ -37,7 +40,7 @@ class ReportCompleted extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'reportcomplete',
         );
     }
 
@@ -48,6 +51,8 @@ class ReportCompleted extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        return [
+            Attachment::fromData(fn () => $this->pdf, $this->job['jobNumber'] . " - " .  $this->job->category['type'] .   ' - Inspection Report.pdf')->withMime('application/pdf'),
+        ];
     }
 }

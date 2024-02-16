@@ -22,6 +22,7 @@ class JobResource extends JsonResource
             "category_id" => $this['category_id'],
             "category" => $this->category['name'],
             "customer" => [
+                "id" => $customer['id'],
                 "nameOnReport" => $customer["nameOnReport"],
                 "name" => $customer["name"],
                 "email" => $customer["email"],

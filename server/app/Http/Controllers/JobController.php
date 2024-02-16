@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\InspectionItemLibraryResource;
 use App\Http\Resources\JobCollection;
+use App\Mail\ReportCompleted;
 use App\Models\InspectionItem;
 use App\Models\Job;
 use App\Models\Report;
@@ -11,6 +12,7 @@ use App\Utils\ReportPdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use TCPDF;
 
 class JobController extends Controller
@@ -29,6 +31,12 @@ class JobController extends Controller
         $content = $jobCollection->toJson();
         $contentLength = strlen($content);
         return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
+    }
+
+    public function previousJobByCustomer(Request $request, string $customerId)
+    {
+        $report = Report::where('customer_id', $customerId)->orderBy('updated_at', 'desc')->first();
+        return $report;
     }
 
     public function syncInspectionItems(Request $request)
@@ -133,6 +141,13 @@ class JobController extends Controller
 
         $report->update(['pdf' => $base64]);
 
-        return response(base64_decode($base64), 200, ['Content-Type' => 'application/pdf']);
+        $user = Auth::user();
+
+        $sentMail = Mail::to('developer.satveer@gmail.com')->send(new ReportCompleted(base64_decode($base64), $currentJob, $user['first'] . " " . $user['last']));
+        if (!$sentMail) {
+            return response()->json(['message' => 'Couln\'t send pdf. Something went wrong'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json(['Pdf has been sent']);
     }
 }

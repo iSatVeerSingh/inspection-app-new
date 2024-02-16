@@ -98,6 +98,7 @@ class ReportPdf extends TCPDF
 
   public function SetHeading(string $heading)
   {
+    $this->Bookmark($heading, 0, 0, "", "B", [0, 32, 96]);
     $this->setFont('', 'B', 13);
     $this->setTextColor(255, 255, 255);
     $this->SetFillColor(0, 32, 96);
@@ -386,5 +387,23 @@ class ReportPdf extends TCPDF
     $this->SetHeading('Terms & Conditions for the Provision of this Report');
     $terms = $template['sections']['Terms & Conditions for the Provision of this Report'];
     $this->writeHTML($terms, false, false, true);
+
+    $this->addTOCPage();
+    $this->setFont('', 'B', 13);
+    $this->setTextColor(255, 255, 255);
+    $this->SetFillColor(0, 32, 96);
+    $this->SetFillColor(0, 32, 96);
+    $this->Cell(0, 25, 'Table Of Contents', 0, 1, "", true);
+    $this->Ln(5);
+    $this->setFont('', '', 11);
+    $this->setTextColor(0, 0, 0);
+
+    $bookmark_templates = [];
+
+    $bookmark_templates[0] = '<table><tbody><tr><td width="475pt">#TOC_DESCRIPTION#</td><td>#TOC_PAGE_NUMBER#</td></tr></tbody></table>';
+
+    $this->setFont('', '', 11);
+    $this->addHTMLTOC(2, 'TOC', $bookmark_templates);
+    $this->endTOCPage();
   }
 }

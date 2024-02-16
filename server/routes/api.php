@@ -66,23 +66,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::get('/demo-pdf', function () {
-  $currentJob = Job::find('5cf683cf-f582-4216-9ff4-20f72d2ed90b');
-
-  $report = Report::find('91405a07-e45b-4ef6-af2a-4cfcdda9d926');
-  // $report = Report::find($reportId);
-  // $report->update([
-  //     'inspectionNotes' => $inspectionNotes,
-  //     'recommendation' => $recommendation,
-  // ]);
-
-  $pdf = new ReportPdf("P", 'pt');
-  $pdf->MakePdf($currentJob, $report);
-  $pdfFile = $pdf->Output("", "S");
-
-  $base64 = base64_encode($pdfFile);
-
-  $report->update(['pdf' => $base64]);
-
-  return response(base64_decode($base64), 200, ['Content-Type' => 'application/pdf']);
-});
+Route::get('/demo/{customerId}', [JobController::class, 'previousJobByCustomer']);

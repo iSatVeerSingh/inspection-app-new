@@ -39,6 +39,16 @@ class InspectionItem extends Model
     }
 
     /**
+     * Get the libraryItem that owns the InspectionItem
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function libraryItem(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'library_item_id');
+    }
+
+    /**
      * Get the report that owns the InspectionItem
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

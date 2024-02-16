@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\InspectionItemLibraryResource;
 use App\Http\Resources\JobCollection;
 use App\Models\InspectionItem;
 use App\Models\Job;
 use App\Models\Report;
+use App\Utils\ReportPdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use TCPDF;
 
 class JobController extends Controller
 {
@@ -117,26 +120,19 @@ class JobController extends Controller
         $currentJob = Job::find($jobId);
 
         $report = Report::find($reportId);
-
         $report->update([
             'inspectionNotes' => $inspectionNotes,
-            'recommendation' => $recommendation
+            'recommendation' => $recommendation,
         ]);
 
-        return ['message' => 'report finished successfully'];
+        $pdf = new ReportPdf("P", 'pt');
+        $pdf->MakePdf($currentJob, $report);
+        $pdfFile = $pdf->Output("", "S");
 
+        $base64 = base64_encode($pdfFile);
 
+        $report->update(['pdf' => $base64]);
 
-        // if (!$report) {
-        //     $report = new Report([
-        //         'id' => $reportId,
-        //         'job_id' => $jobId,
-        //         'customer_id' => $currentJob->customer->id,
-        //         'inspectionNotes' => $inspectionNotes,
-        //         'recommendation' => $recommendation
-        //     ]);
-
-        //     $report->save();
-        // }
+        return response(base64_decode($base64), 200, ['Content-Type' => 'application/pdf']);
     }
 }

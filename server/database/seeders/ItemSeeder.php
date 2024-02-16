@@ -15,7 +15,7 @@ class ItemSeeder extends Seeder
      */
     public function run(): void
     {
-        $allitems = Storage::json('newitems.json');
+        $allitems = Storage::json('libraryitems.json');
 
         $allCategories = array_map(function ($item) {
             return $item['category'];
@@ -42,13 +42,7 @@ class ItemSeeder extends Seeder
             $libItem['openingParagraph'] = $item['openingParagraph'];
             $libItem['closingParagraph'] = $item['closingParagraph'];
             $libItem['height'] = $item['height'];
-
-
-            if (array_key_exists('embeddedImage', $item)) {
-                $libItem['embeddedImages'] = [
-                    $item['embeddedImage']
-                ];
-            }
+            $libItem['embeddedImages'] = $item['embeddedImages'];
 
             $libItem->save();
         }

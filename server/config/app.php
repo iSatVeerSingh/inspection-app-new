@@ -70,7 +70,8 @@ return [
     |
     */
 
-    'timezone' => 'Australia/Melbourne',
+    // 'timezone' => 'Australia/Melbourne',
+    'timezone' => 'Asia/Kolkata',
 
     /*
     |--------------------------------------------------------------------------

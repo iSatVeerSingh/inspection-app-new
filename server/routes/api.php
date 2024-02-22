@@ -51,7 +51,6 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/install-items', [ItemController::class, 'install']);
   Route::get('/install-recommendations', [RecommendationController::class, 'install']);
   Route::get('/install-job-categories', [JobCategoryController::class, 'install']);
-  Route::get('/install-jobs', [JobController::class, 'syncJobs']);
 
   Route::post('/suggest-note', [NoteController::class, 'suggestNote']);
   Route::post('/suggest-item', [ItemController::class, 'suggestItem']);
@@ -63,9 +62,124 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('/sync-inspection-items', [JobController::class, 'syncInspectionItems']);
   Route::get('/sync-jobs', [JobController::class, 'syncJobs']);
   Route::post('/finish-report', [JobController::class, 'finishReport']);
+  Route::get('/previous-report/{customerId}', [JobController::class, 'previousJobByCustomer']);
 });
 
 Route::get('/report/{reportId}/{pdfname}', [JobController::class, 'getReportPdf']);
 
+Route::get('/demo', function () {
+  $report = Report::find('02f8b309-331f-4a03-9099-043c5f7da2bb');
+  $currentJob = Job::find('0942e4fe-d55a-41bd-8cbb-20fda2d6d2db');
+  $pdf = new ReportPdf("P", 'pt');
+  $pdf->MakePdf($currentJob, $report);
+  $pdf->Output();
 
-Route::get('/demo/{customerId}', [JobController::class, 'previousJobByCustomer']);
+  $inspectionItems = $report->inspectionItems->map(function (InspectionItem $inspectionItem) {
+    if (!$inspectionItem['library_item_id']) {
+      $inspectionItem['totalHeight'] = $inspectionItem['height'];
+      return $inspectionItem;
+    }
+    $libItem = $inspectionItem->libraryItem;
+    $totalHeight = $inspectionItem['height'] + $libItem['height'];
+    $inspectionItem['library_item'] = $libItem;
+    $inspectionItem['totalHeight'] = $totalHeight;
+    if ($inspectionItem['previousItem']) {
+      $prevItem = $inspectionItem->prevReportItem;
+      $allImages = [];
+      array_push($allImages, ...$inspectionItem['images'], ...$prevItem['images']);
+      $inspectionItem['images'] = $allImages;
+    }
+    return $inspectionItem;
+  })->all();
+
+  $previousItems = [];
+  $newItems = [];
+
+  foreach ($inspectionItems as $insItem) {
+    if ($insItem['previousItem']) {
+      array_push($previousItems, $insItem);
+    } else {
+      array_push($newItems, $insItem);
+    }
+  }
+
+  usort($previousItems, function ($a, $b) {
+    return $b->totalHeight - $a->totalHeight;
+  });
+  // usort($newitems, function ($a, $b) {
+  //   return $b->totalHeight - $a->totalHeight;
+  // });
+
+  $maxContentHeight = 745;
+
+  $finalPrevious = [];
+
+  for ($i = 0; $i < count($previousItems); $i++) {
+    $itemA = $previousItems[$i];
+
+    $isAExist = array_search($itemA['id'], array_column($finalPrevious, 'id'));
+    if ($isAExist) {
+      continue;
+    }
+
+    $itemA['pageBreak'] = true;
+    array_push($finalPrevious, [
+      'id' => $itemA['id'],
+      'totalHeight' => $itemA['totalHeight'],
+      'pageBreak' => $itemA['pageBreak'],
+      'name' => $itemA['name'],
+    ]);
+
+    if (count($itemA['images']) > 8) {
+      continue;
+    }
+
+    if ($itemA['totalHeight'] > 600 && $itemA['totalHeight'] <= $maxContentHeight) {
+      continue;
+    }
+
+    if ($i === count($previousItems) - 1) {
+      break;
+    }
+
+    $remainingSpace = 750;
+    if ($maxContentHeight >= $itemA['totalHeight']) {
+      $remainingSpace = $maxContentHeight - $itemA['totalHeight'];
+    } else {
+      $remainingSpace = 2 * $maxContentHeight - $itemA['totalHeight'];
+    }
+
+    $secondItem = null;
+    $diff = $remainingSpace;
+
+    for ($j = $i + 1; $j < count($previousItems); $j++) {
+      $itemB = $previousItems[$j];
+
+      $isBExist = array_search($itemB['id'], array_column($finalPrevious, 'id'));
+      if ($isBExist) {
+        continue;
+      }
+
+      if ($itemB['totalHeight'] < $remainingSpace && $remainingSpace - $itemB['totalHeight'] < $diff) {
+        $secondItem = $itemB;
+        $diff = $remainingSpace - $itemB['totalHeight'];
+      }
+    }
+
+    if ($secondItem) {
+      $secondItem['pageBreak'] = false;
+      array_push($finalPrevious, [
+        'id' => $secondItem['id'],
+        'totalHeight' => $secondItem['totalHeight'],
+        'pageBreak' => $secondItem['pageBreak'],
+        'name' => $secondItem['name']
+      ]);
+    }
+  }
+
+  $lastItem = array_pop($finalPrevious);
+  $lastItem['pageBreak'] = false;
+  array_unshift($finalPrevious, $lastItem);
+
+  return $finalPrevious;
+});

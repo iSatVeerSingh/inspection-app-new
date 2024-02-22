@@ -144,7 +144,7 @@ class ReportPdf extends TCPDF
 
   public function MakePdf(Job $job, Report $report)
   {
-    set_time_limit(120);
+    set_time_limit(180);
 
     $template = Storage::json('report-template.json');
     $this->logo = $this->GetImageFromBase64($template['images']['headerLogo']);
@@ -179,6 +179,8 @@ class ReportPdf extends TCPDF
     $this->TitlePage($job, $template);
     $this->AddPage();
     $this->setPrintFooter(true);
+    $this->setAutoPageBreak(true, 25);
+    $this->setCellHeightRatio(1.2);
 
     $this->SetHeading('Client & Property Details');
     $this->MiniDetails("Client Name(s)", $customer['nameOnReport']);
@@ -191,6 +193,22 @@ class ReportPdf extends TCPDF
     $this->MiniDetails("Date of this Report", (new DateTime())->format('l jS F Y'));
     $this->Ln(10);
     $this->InspectionNotes($report['inspectionNotes']);
+    $this->SetHeading('Report Summary');
+    $previousCount = $report->inspectionItems()->where('previousItem', true)->count();
+    $newCount = $report->inspectionItems()->where('previousItem', false)->count();
+    $recommendation = $report['recommendation'];
+
+    $summary = '<p>' . $newCount . ' new items added in this report</p>';
+    if ($previousCount !== 0) {
+      $summary = '<p>' . $previousCount . ' items added from previous report.</p>' . $summary;
+    }
+
+    $summary = $summary . '<p> Total ' . $previousCount + $newCount . ' items added in this report.</p>';
+    if ($recommendation) {
+      $summary = $summary . '<p> Recommendation by inspector: ' . $recommendation . '</p>';
+    }
+    $this->writeHTML($summary, false, false, true);;
+    $this->Ln(10);
     $this->SetHeading('Report Purpose');
     $purpose = $template['sections']['Report Purpose'];
     $this->writeHTML($purpose, false, false, true);
@@ -198,13 +216,12 @@ class ReportPdf extends TCPDF
     $this->SetHeading('General');
     $general = $template['sections']['General'];
     $this->writeHTML($general, false, false, true);
+    $this->writeHTML($job->inspector['first'] . " " . $job->inspector['last']);
+    $inspectorPhone = $job->inspector['phone'];
+    if ($inspectorPhone) {
+      $this->writeHTML($inspectorPhone);
+    }
     $this->Ln(10);
-    $this->AddPage();
-    $this->SetHeading("Schedule of Building Defects");
-    $text = $template['sections']['Schedule of Building Defects'];
-    $this->writeHTML($text, false, false, true);
-    $this->Ln(10);
-    $this->setCellHeightRatio(1.2);
 
     $inspectionItems = $report->inspectionItems->map(function (InspectionItem $inspectionItem) {
       if (!$inspectionItem['library_item_id']) {
@@ -215,33 +232,225 @@ class ReportPdf extends TCPDF
       $totalHeight = $inspectionItem['height'] + $libItem['height'];
       $inspectionItem['library_item'] = $libItem;
       $inspectionItem['totalHeight'] = $totalHeight;
+      if ($inspectionItem['previousItem']) {
+        $prevItem = $inspectionItem->prevReportItem;
+        $allImages = [];
+        array_push($allImages, ...$inspectionItem['images'], ...$prevItem['images']);
+        $inspectionItem['images'] = $allImages;
+      }
       return $inspectionItem;
     })->all();
 
-    usort($inspectionItems, function ($a, $b) {
+    $previousItems = [];
+    $newItems = [];
+
+    foreach ($inspectionItems as $insItem) {
+      if ($insItem['previousItem']) {
+        array_push($previousItems, $insItem);
+      } else {
+        array_push($newItems, $insItem);
+      }
+    }
+
+    if (count($previousItems) !== 0) {
+      $this->AddPage();
+      $this->SetHeading('Incomplete Items from our Previous Report');
+      $this->Ln(10);
+      usort($previousItems, function ($a, $b) {
+        return $b->totalHeight - $a->totalHeight;
+      });
+
+      $maxContentHeight = 750;
+
+      $finalPrevious = [];
+
+      for ($i = 0; $i < count($previousItems); $i++) {
+        $itemA = $previousItems[$i];
+
+        $isAExist = array_search($itemA['id'], array_column($finalPrevious, 'id'));
+        if ($isAExist) {
+          continue;
+        }
+
+        $itemA['pageBreak'] = true;
+        array_push($finalPrevious, $itemA);
+
+        if (count($itemA['images']) > 8) {
+          continue;
+        }
+
+        if ($itemA['totalHeight'] > 600 && $itemA['totalHeight'] <= $maxContentHeight) {
+          continue;
+        }
+
+        if ($i === count($previousItems) - 1) {
+          break;
+        }
+
+        $remainingSpace = 750;
+        if ($maxContentHeight >= $itemA['totalHeight']) {
+          $remainingSpace = $maxContentHeight - $itemA['totalHeight'];
+        } else {
+          $remainingSpace = 2 * $maxContentHeight - $itemA['totalHeight'];
+        }
+
+        $secondItem = null;
+        $diff = $remainingSpace;
+
+        for ($j = $i + 1; $j < count($previousItems); $j++) {
+          $itemB = $previousItems[$j];
+
+          $isBExist = array_search($itemB['id'], array_column($finalPrevious, 'id'));
+          if ($isBExist) {
+            continue;
+          }
+
+          if ($itemB['totalHeight'] < $remainingSpace && $remainingSpace - $itemB['totalHeight'] < $diff) {
+            $secondItem = $itemB;
+            $diff = $remainingSpace - $itemB['totalHeight'];
+          }
+        }
+
+        if ($secondItem) {
+          $secondItem['pageBreak'] = false;
+          array_push($finalPrevious, $secondItem);
+        }
+      }
+
+      $lastItem = array_pop($finalPrevious);
+      $lastItem['pageBreak'] = false;
+      array_unshift($finalPrevious, $lastItem);
+
+      foreach ($finalPrevious as $index => $inspectionItem) {
+        $itemContent = "";
+        $name = '<p style="font-weight: bold;">' . $inspectionItem['name'] . "</p>";
+
+        $itemContent = $itemContent . $name;
+
+        $openingParagraph = "";
+        $closingParagraph = "";
+
+        $embeddedImages = "";
+        if (!$inspectionItem['library_item']) {
+          $openingParagraph = $inspectionItem['openingParagraph'];
+          $closingParagraph = $inspectionItem['closingParagraph'];
+        } else {
+          $openingParagraph = $inspectionItem['library_item']['openingParagraph'];
+          $closingParagraph = $inspectionItem['library_item']['closingParagraph'];
+
+          if ($inspectionItem['library_item']['embeddedImages']) {
+            $embImages = $inspectionItem['library_item']['embeddedImages'];
+            $embCols = '';
+            $embRows = '';
+            foreach ($embImages as $key => $embimg) {
+              $embElement = '<td style="text-align: center;"><img src="' . $embimg . '" style="display: block; width: 200pt;"></td>';
+              $embCols = $embCols . $embElement;
+
+              if ($key % 2 !== 0) {
+                $embRows = $embRows . '<tr>' . $embCols . '</tr>';
+                $embCols = '';
+              }
+
+              if ($key % 2 === 0 && $key === count($embImages) - 1) {
+                $embRows = $embRows . '<tr>' . $embCols . '</tr>';
+              }
+            }
+
+            $embeddedImages = '<table><tbody>' . $embRows . '</tbody></table>';
+          }
+        }
+
+        $itemContent = $itemContent . $openingParagraph;
+
+
+
+        if ($inspectionItem['note'] && $inspectionItem['note'] !== "") {
+          $noteText = '<p>Note:</p>' . '<p>' . $inspectionItem['note'] . '</p>';
+          $itemContent = $itemContent . $noteText;
+        }
+
+        $images = $inspectionItem['images'];
+        $imgcols = '';
+        $imgRows = '';
+        foreach ($images as $i => $imgStr) {
+          $imgElement = "";
+          if ($i % 2 === 0 && $i === count($images) - 1) {
+            $imgElement = '<td colspan="2" style="text-align: center;"><img src="' . $imgStr . '" style="width: 200pt; height: 200pt;"></td>';
+          } else {
+            $imgElement = '<td><img src="' . $imgStr . '" style="display: block; width: 200pt; height: 200pt;"></td>';
+          }
+          $imgcols = $imgcols . $imgElement;
+
+          if ($i % 2 !== 0) {
+            $imgRows = $imgRows . '<tr>' . $imgcols . '</tr>';
+            $imgcols = '';
+          }
+
+          if ($i % 2 === 0 && $i === count($images) - 1) {
+            $imgRows = $imgRows . '<tr>' . $imgcols . '</tr>';
+          }
+        }
+
+        $imgTable = '<table><tbody>' . $imgRows . '</tbody></table>';
+        $itemContent = $itemContent . $imgTable;
+
+        $itemContent = $itemContent . $closingParagraph;
+
+        if ($embeddedImages !== "") {
+          $itemContent = $itemContent . $embeddedImages;
+        }
+
+        $serial = '<td style="width: 20pt; border-top: 1pt solid #002060;">' . $index + 1 . "</td>";
+        $column = '<td style="width: 475pt; border-top: 1pt solid #002060;">' . $itemContent . "</td>";
+
+        $row = '<tr style="vertical-align: top;">' . $serial . $column . "</tr>";
+        $table = '<table style="width: 495pt; border: 1pt solid #002060;"><tbody>' . $row . "</tbody></table>";
+
+        if ($inspectionItem['pageBreak']) {
+          $this->AddPage();
+        }
+        $this->writeHTML($table, false, false, true, false);
+      }
+    }
+
+    $this->AddPage();
+    $this->SetHeading("Schedule of Newly Identified Building Defects");
+    $text = $template['sections']['Schedule of Building Defects'];
+    $this->writeHTML($text, false, false, true);
+    $this->Ln(10);
+
+    usort($newItems, function ($a, $b) {
       return $b->totalHeight - $a->totalHeight;
     });
 
-    $maxContentHeight = 745;
+    $maxContentHeight = 750;
 
-    $final = [];
+    $finalNew = [];
 
-    for ($i = 0; $i < count($inspectionItems); $i++) {
-      $itemA = $inspectionItems[$i];
+    for ($i = 0; $i < count($newItems); $i++) {
+      $itemA = $newItems[$i];
 
-      $isAExist = array_search($itemA['id'], array_column($final, 'id'));
+      $isAExist = array_search($itemA['id'], array_column($finalNew, 'id'));
       if ($isAExist) {
         continue;
       }
 
       $itemA['pageBreak'] = true;
-      array_push($final, $itemA);
+      array_push($finalNew, $itemA);
 
-      if ($i === count($inspectionItems) - 1) {
+      if (count($itemA['images']) > 8) {
+        continue;
+      }
+
+      if ($itemA['totalHeight'] > 600 && $itemA['totalHeight'] <= $maxContentHeight) {
+        continue;
+      }
+
+      if ($i === count($newItems) - 1) {
         break;
       }
 
-      $remainingSpace = 745;
+      $remainingSpace = 750;
       if ($maxContentHeight >= $itemA['totalHeight']) {
         $remainingSpace = $maxContentHeight - $itemA['totalHeight'];
       } else {
@@ -251,10 +460,10 @@ class ReportPdf extends TCPDF
       $secondItem = null;
       $diff = $remainingSpace;
 
-      for ($j = $i + 1; $j < count($inspectionItems); $j++) {
-        $itemB = $inspectionItems[$j];
+      for ($j = $i + 1; $j < count($newItems); $j++) {
+        $itemB = $newItems[$j];
 
-        $isBExist = array_search($itemB['id'], array_column($final, 'id'));
+        $isBExist = array_search($itemB['id'], array_column($finalNew, 'id'));
         if ($isBExist) {
           continue;
         }
@@ -267,17 +476,15 @@ class ReportPdf extends TCPDF
 
       if ($secondItem) {
         $secondItem['pageBreak'] = false;
-        array_push($final, $secondItem);
+        array_push($finalNew, $secondItem);
       }
     }
 
-    $lastItem = array_pop($final);
-    array_unshift($final, $lastItem);
+    $lastItem = array_pop($finalNew);
+    $lastItem['pageBreak'] = false;
+    array_unshift($finalNew, $lastItem);
 
-    $itemHtmlRows = "";
-    $table = "";
-
-    foreach ($final as $index => $inspectionItem) {
+    foreach ($finalNew as $index => $inspectionItem) {
       $itemContent = "";
       $name = '<p style="font-weight: bold;">' . $inspectionItem['name'] . "</p>";
 
@@ -299,7 +506,7 @@ class ReportPdf extends TCPDF
           $embCols = '';
           $embRows = '';
           foreach ($embImages as $key => $embimg) {
-            $embElement = '<td><img src="' . $embimg . '" style="display: block; width: 200pt;"></td>';
+            $embElement = '<td style="text-align: center;"><img src="' . $embimg . '" style="display: block; width: 200pt;"></td>';
             $embCols = $embCols . $embElement;
 
             if ($key % 2 !== 0) {
@@ -356,27 +563,15 @@ class ReportPdf extends TCPDF
         $itemContent = $itemContent . $embeddedImages;
       }
 
-      $serial = '<td style="width: 30pt; border-top: 1pt solid #002060;">' . $index + 1 . "</td>";
-      $column = '<td style="width: 470pt; border-top: 1pt solid #002060;">' . $itemContent . "</td>";
+      $serial = '<td style="width: 20pt; border-top: 1pt solid #002060;">' . $index + 1 . "</td>";
+      $column = '<td style="width: 475pt; border-top: 1pt solid #002060;">' . $itemContent . "</td>";
 
       $row = '<tr style="vertical-align: top;">' . $serial . $column . "</tr>";
-      $itemHtmlRows = $itemHtmlRows . $row;
+      $table = '<table style="width: 495pt; border: 1pt solid #002060;"><tbody>' . $row . "</tbody></table>";
 
       if ($inspectionItem['pageBreak']) {
-        $table = '<table style="width: 495pt; border: 1pt solid #002060;" cellpadding="1"><tbody>' . $itemHtmlRows . "</tbody></table>";
-        $itemHtmlRows = "";
-        if ($index !== 0) {
-          $this->AddPage();
-        }
-        $this->writeHTML($table, false, false, true, false);
+        $this->AddPage();
       }
-    }
-
-    if ($itemHtmlRows !== "") {
-      $table = '<table style="width: 495pt; border: 1pt solid black;" cellpadding="1"><tbody>' . $itemHtmlRows . "</tbody></table>";
-      $itemHtmlRows = "";
-      $this->AddPage();
-      // $this->Image($this->logo, 0, 0, 50, 0, "PNG");
       $this->writeHTML($table, false, false, true, false);
     }
 

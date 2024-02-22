@@ -22,6 +22,7 @@ class InspectionItem extends Model
         'height',
         'custom',
         'previousItem',
+        'previous_item_id',
         'openingParagraph',
         'closingParagraph',
         'embeddedImage'
@@ -56,5 +57,15 @@ class InspectionItem extends Model
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class, 'report_id');
+    }
+
+    /**
+     * Get the prevReportItem that owns the InspectionItem
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function prevReportItem(): BelongsTo
+    {
+        return $this->belongsTo(InspectionItem::class, 'previous_item_id');
     }
 }

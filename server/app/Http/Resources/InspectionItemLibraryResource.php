@@ -18,7 +18,6 @@ class InspectionItemLibraryResource extends JsonResource
             "id" => $this->id,
             "name" => $this->name,
             "report_id" => $this->report_id,
-            "library_item_id" => $this->library_item_id,
             "images" => $this->images,
             "note" => $this->note,
             "height" => $this->height,
@@ -28,6 +27,10 @@ class InspectionItemLibraryResource extends JsonResource
             $data['openingParagraph'] = $this->openingParagraph;
             $data['closingParagraph'] = $this->closingParagraph;
             $data['embeddedImage'] = $this->embeddedImage;
+            $data['category'] = "Custom";
+        } else {
+            $data['library_item_id'] =  $this->library_item_id;
+            $data['category'] = $this->libraryItem->category['name'];
         }
 
         $data['summary'] = $this->libraryItem['summary'];

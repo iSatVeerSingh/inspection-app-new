@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('inspectionNotes')->nullable();
             $table->text('recommendation')->nullable();
             $table->dateTime('completedAt')->nullable();
-            $table->binary('pdf')->nullable();
+            $table->longText('pdf')->nullable();
             $table->timestamps();
         });
     }

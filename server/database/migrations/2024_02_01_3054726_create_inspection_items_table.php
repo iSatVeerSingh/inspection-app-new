@@ -22,6 +22,7 @@ return new class extends Migration
 
             $table->boolean('custom')->default(false);
             $table->boolean('previousItem')->default(false);
+            $table->foreignUuid('previous_item_id')->nullable()->constrained('inspection_items');
 
             $table->text('openingParagraph')->nullable();
             $table->text('closingParagraph')->nullable();

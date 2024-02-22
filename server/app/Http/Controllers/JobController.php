@@ -41,12 +41,16 @@ class JobController extends Controller
 
         $reportData = [
             "id" => $report['id'],
-            "completedAt" => $report['completedAt'],
+            "completedAt" => $report['completedAt']->format('Y-m-d h:i A'),
             "customer_id" => $report['customer_id'],
-            "jobNumber" => $report->job['jobNumber'],
+            "category" => $report->job->category['name'],
+            "previousJob" => $report->job['jobNumber'],
             "inspectionItems" => $inspectionItems
         ];
-        return $reportData;
+
+        $content = json_encode($reportData);
+        $contentLength = strlen($content);
+        return response($content, 200, ['Content-Length' => $contentLength, "Content-Type" => "application/json,UTF-8"]);
     }
 
     public function syncInspectionItems(Request $request)
@@ -106,6 +110,9 @@ class JobController extends Controller
                     $newItem['previousItem'] = true;
                 }
 
+                if (array_key_exists('previous_item_id', $inspectionItem)) {
+                    $newItem['previous_item_id'] = $inspectionItem['previous_item_id'];
+                }
                 if (array_key_exists('openingParagraph', $inspectionItem)) {
                     $newItem['openingParagraph'] = $inspectionItem['openingParagraph'];
                 }
@@ -147,6 +154,8 @@ class JobController extends Controller
         $pdf->MakePdf($currentJob, $report);
         $pdfFile = $pdf->Output("", "S");
 
+
+
         $base64 = base64_encode($pdfFile);
 
         $report->update(['pdf' => $base64]);
@@ -161,11 +170,14 @@ class JobController extends Controller
         $completedAt = new DateTime();
 
         $report->update(['completedAt' => $completedAt]);
-        $$currentJob->update(['status' => 'Completed', 'completedAt' => $completedAt]);
+        $currentJob->update(['status' => 'Completed', 'completedAt' => $completedAt]);
+        // $$currentJob->update(['status' => 'Completed', 'completedAt' => $completedAt]);
 
         return response()->json([
             'message' => "Report generated successfully",
-            'report_id' => $report['id']
+            'report_id' => $report['id'],
+            'name' => $currentJob->category['type'] . " - Inspection Report - " . $currentJob->customer['nameOnReport'],
+            'completedAt' => $completedAt
         ]);
     }
 

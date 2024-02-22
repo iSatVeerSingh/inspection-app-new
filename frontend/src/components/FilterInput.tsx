@@ -1,10 +1,4 @@
-import {
-  FormControl,
-  FormControlProps,
-  FormLabel,
-  Input,
-  InputProps,
-} from "@chakra-ui/react";
+import { Input, InputProps } from "@chakra-ui/react";
 import { Ref, forwardRef } from "react";
 
 type FilterInputProps = InputProps;

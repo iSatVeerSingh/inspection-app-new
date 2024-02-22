@@ -21,6 +21,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Progress,
   Text,
   useDisclosure,
   useToast,
@@ -42,6 +43,9 @@ const Job = () => {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const { onOpen, onClose, isOpen } = useDisclosure();
+  const [progress, setProgress] = useState<any>(0);
+  const [uploading, setUploading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const {
     isOpen: isOpenAlert,
@@ -159,6 +163,7 @@ const Job = () => {
 
     const data = nonSyncedItemsResponse.data;
     if (data.inspectionItems.length > 0 || data.deletedItems.length > 0) {
+      setUploading(true);
       let syncResponse = await inspectionApiAxios.post(
         "/sync-inspection-items",
         {
@@ -166,6 +171,12 @@ const Job = () => {
           report_id: data.report_id,
           deletedItems: data.deletedItems,
           inspectionItems: data.inspectionItems,
+        },
+        {
+          onUploadProgress: (e) => {
+            const upload = Math.floor(e.progress! * 100);
+            setProgress(upload);
+          },
         }
       );
 
@@ -175,9 +186,11 @@ const Job = () => {
           status: "error",
           duration: 4000,
         });
+        setUploading(false);
         setSubmitting(false);
         return;
       }
+      setUploading(false);
 
       const { success, error } = await clientApi.put("/non-synced-items", {
         inspectionItems: syncResponse.data,
@@ -196,10 +209,11 @@ const Job = () => {
 
     console.log("start", new Date());
 
+    setGenerating(true);
     const finishResponse = await inspectionApi.post("/finish-report", {
       job_id: data.id,
       report_id: data.report_id,
-      inspectionNotes: data.inspectionNotes,
+      inspectionNotes: data.inspectionNotes || [],
       recommendation: data.recommendation || null,
     });
 
@@ -209,6 +223,7 @@ const Job = () => {
         status: "error",
         duration: 4000,
       });
+      setGenerating(false);
       setSubmitting(false);
       return;
     }
@@ -217,6 +232,7 @@ const Job = () => {
       status: "Completed",
       completedAt: finishResponse.data.completedAt,
     });
+    setGenerating(false);
     if (!response.success) {
       return;
     }
@@ -467,58 +483,74 @@ const Job = () => {
       >
         <AlertDialogOverlay>
           <AlertDialogContent>
-            {job?.status === "Completed" ? (
-              <>
-                <AlertDialogHeader fontSize={"lg"} fontWeight={"bold"}>
-                  Report Success
-                </AlertDialogHeader>
-                <AlertDialogBody>
-                  <Text>
-                    You can view the pdf report by visiting this link.
-                  </Text>
+            <AlertDialogHeader>Finish Report</AlertDialogHeader>
+            <AlertDialogBody>
+              {job?.status === "Completed" ? (
+                <>
+                  <Text>You can view the pdf report by visiting this link</Text>
                   <a
                     href={`https://${location.hostname}/api/report/${job?.report_id}/${job?.type} - Inspection Report - ${job?.customer.nameOnReport}.pdf`}
                     target="_blank"
-                    style={{ textDecoration: "underline", color: "blue" }}
+                    style={{
+                      textDecoration: "underline",
+                      color: "blue",
+                      fontSize: "20px",
+                    }}
                   >
                     Click to view pdf
                   </a>
-                </AlertDialogBody>
-                <AlertDialogFooter gap={3}>
-                  <ButtonOutline
-                    ref={cancelRef}
-                    isDisabled={submitting}
-                    onClick={onCloseAlert}
-                  >
-                    Close
-                  </ButtonOutline>
-                </AlertDialogFooter>
-              </>
-            ) : (
-              <>
-                <AlertDialogHeader fontSize={"lg"} fontWeight={"bold"}>
-                  Finish Report
-                </AlertDialogHeader>
-                <AlertDialogBody>
-                  Are you sure? Please review the report once before submitting.
-                </AlertDialogBody>
-                <AlertDialogFooter gap={3}>
-                  <ButtonOutline
-                    ref={cancelRef}
-                    isDisabled={submitting}
-                    onClick={onCloseAlert}
-                  >
-                    Cancel and Review
-                  </ButtonOutline>
-                  <ButtonPrimary
-                    isLoading={submitting}
-                    loadingText="Submitting"
-                    onClick={submitReport}
-                  >
-                    Submit Report
-                  </ButtonPrimary>
-                </AlertDialogFooter>
-              </>
+                  <Box mt={3}>
+                    <ButtonOutline
+                      ref={cancelRef}
+                      isDisabled={submitting}
+                      onClick={onCloseAlert}
+                    >
+                      Close
+                    </ButtonOutline>
+                  </Box>
+                </>
+              ) : (
+                <>
+                  {generating ? (
+                    <Box>
+                      <Text>
+                        Please wait while report is being generated. This can
+                        take a few minutes depending on total items in report
+                      </Text>
+                      <Loading />
+                    </Box>
+                  ) : uploading ? (
+                    <Box>
+                      <Text>Uploading all items for current report</Text>
+                      <Progress value={progress} rounded={"full"} />
+                    </Box>
+                  ) : (
+                    <Box>
+                      Are you sure? Please review the report once before
+                      submitting.
+                    </Box>
+                  )}
+                </>
+              )}
+            </AlertDialogBody>
+
+            {!uploading && !generating && job?.status !== "Completed" && (
+              <AlertDialogFooter gap={3}>
+                <ButtonOutline
+                  ref={cancelRef}
+                  isDisabled={submitting}
+                  onClick={onCloseAlert}
+                >
+                  Cancel and Review
+                </ButtonOutline>
+                <ButtonPrimary
+                  isLoading={submitting}
+                  loadingText="Submitting"
+                  onClick={submitReport}
+                >
+                  Submit Report
+                </ButtonPrimary>
+              </AlertDialogFooter>
             )}
           </AlertDialogContent>
         </AlertDialogOverlay>

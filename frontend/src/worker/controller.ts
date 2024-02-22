@@ -675,3 +675,56 @@ export const getPreviousItemsController: RouteHandler = async ({ url }) => {
     return getBadRequestResponse();
   }
 };
+
+export const getLibraryItemsController: RouteHandler = async ({ url }) => {
+  try {
+    const page = url.searchParams.get("page");
+    const name = url.searchParams.get("name");
+
+    const category = url.searchParams.get("category");
+
+    const perPage = 15;
+    const pageNumber = Number(page);
+    const skip = pageNumber === 0 ? 0 : (pageNumber - 1) * perPage;
+
+    let itemsCollection;
+    if (category) {
+      itemsCollection = DB.items.where("category").equals(category);
+    } else {
+      itemsCollection = DB.items.toCollection();
+    }
+
+    if (name) {
+      const allItems = await itemsCollection.toArray();
+      const filteredItems = allItems.filter((item: any) =>
+        item.name.toLowerCase().includes(name.toLowerCase())
+      );
+      return getSuccessResponse({
+        data: filteredItems,
+        pages: {
+          current_page: 1,
+          next: null,
+          prev: null,
+        },
+      });
+    }
+
+    const total = await itemsCollection.count();
+    const totalPages =
+      total % perPage === 0 ? total / perPage : Math.ceil(total / perPage);
+
+    const items = await itemsCollection.offset(skip).limit(perPage).toArray();
+
+    const current_page = pageNumber === 0 ? 1 : pageNumber;
+    return getSuccessResponse({
+      data: items,
+      pages: {
+        current_page,
+        next: current_page < totalPages ? current_page + 1 : null,
+        prev: current_page > 1 ? current_page - 1 : null,
+      },
+    });
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};

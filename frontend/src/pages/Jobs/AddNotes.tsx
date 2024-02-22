@@ -44,7 +44,7 @@ const AddNotes = () => {
     });
     if (!response.success) {
       toast({
-        title: response.data.message,
+        title: response.error,
         duration: 4000,
         status: "error",
       });

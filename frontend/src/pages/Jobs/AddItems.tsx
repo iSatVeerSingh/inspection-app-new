@@ -153,7 +153,8 @@ const AddItems = () => {
     parentRef.current!.style.fontSize = "11pt";
     parentRef.current!.style.lineHeight = "normal";
     const imgdiv = document.createElement("div");
-    imgdiv.style.textAlign = "center";
+    imgdiv.style.display = "grid";
+    imgdiv.style.gridTemplateColumns = "1fr 1fr";
 
     for (let i = 0; i < resizedImages.length; i++) {
       let itemImg = resizedImages[i];
@@ -161,6 +162,7 @@ const AddItems = () => {
       img.src = itemImg! as string;
       img.style.width = "200pt";
       img.style.height = "200pt";
+      img.style.marginBottom = "4px";
       imgdiv.appendChild(img);
     }
     parentRef.current!.appendChild(imgdiv);
@@ -172,8 +174,11 @@ const AddItems = () => {
     }
 
     const height = Math.ceil(parentRef.current!.clientHeight * 0.75);
-
     inspectionItem.height = height;
+
+    if (resizedImages.length > 6) {
+      inspectionItem.height = height + 130;
+    }
 
     const { success, data, error } = await clientApi.post(
       "/jobs/inspection-items",
@@ -262,10 +267,10 @@ const AddItems = () => {
     }
 
     parentRef.current!.innerHTML = "";
+    parentRef.current!.style.width = "475pt";
     parentRef.current!.style.fontFamily = "Times, serif";
-    parentRef.current!.style.fontSize = "13pt";
-    parentRef.current!.style.lineHeight = "1";
-    parentRef.current!.style.width = "470pt";
+    parentRef.current!.style.fontSize = "11pt";
+    parentRef.current!.style.lineHeight = "normal";
 
     const namediv = document.createElement("p")!;
     namediv.textContent = inspectionItem.name!;
@@ -278,7 +283,6 @@ const AddItems = () => {
 
     const imgdiv = document.createElement("div");
     imgdiv.style.display = "grid";
-    imgdiv.style.gap = "5pt";
     imgdiv.style.gridTemplateColumns = "1fr 1fr";
 
     for (let i = 0; i < resizedImages.length; i++) {
@@ -287,6 +291,7 @@ const AddItems = () => {
       img.src = itemImg! as string;
       img.style.width = "220pt";
       img.style.height = "220pt";
+      img.style.marginBottom = "4px";
       imgdiv.appendChild(img);
     }
     parentRef.current!.appendChild(imgdiv);
@@ -299,20 +304,22 @@ const AddItems = () => {
       const img = document.createElement("img");
       img.src = inspectionItem.embeddedImage! as string;
       img.style.width = "220pt";
-      img.style.height = "220pt";
+      img.style.maxHeight = "220pt";
       parentRef.current!.appendChild(img);
     }
 
     if (inspectionItem.note && inspectionItem.note !== "") {
       const noteP = document.createElement("p");
-      noteP.style.fontFamily = "Times, serif";
-      noteP.style.fontSize = "11pt";
-      noteP.textContent = inspectionItem.note;
+      noteP.innerHTML = "Note: " + "<br>" + inspectionItem.note;
       parentRef.current!.appendChild(noteP);
     }
 
     const height = Math.ceil(parentRef.current!.clientHeight * 0.75);
     inspectionItem.height = height;
+
+    if (resizedImages.length > 6) {
+      inspectionItem.height = height + 130;
+    }
 
     const { success, data, error } = await clientApi.post(
       "/jobs/inspection-items",

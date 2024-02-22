@@ -11,7 +11,7 @@ import {
 import Card from "../components/Card";
 import { useState } from "react";
 import ButtonPrimary from "../components/ButtonPrimary";
-import inspectionApi, { inspectionApiAxios } from "../api/inspectionApi";
+import { inspectionApiAxios } from "../api/inspectionApi";
 import clientApi from "../api/clientApi";
 import { useNavigate } from "react-router-dom";
 
@@ -24,30 +24,6 @@ const Init = () => {
   const navigate = useNavigate();
 
   const installApp = async () => {
-    if ("serviceWorker" in navigator) {
-      let serviceWorker: ServiceWorker;
-      const registration = await navigator.serviceWorker.register(
-        import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw",
-        { type: import.meta.env.MODE === "production" ? "classic" : "module" }
-      );
-      if (registration.installing) {
-        serviceWorker = registration.installing;
-      } else if (registration.waiting) {
-        serviceWorker = registration.waiting;
-      } else if (registration.active) {
-        serviceWorker = registration.active;
-      }
-      if (serviceWorker!) {
-        serviceWorker.addEventListener("statechange", (e) => {
-          if ((e.currentTarget as ServiceWorker).state === "activated") {
-            console.log("Service worker activated");
-            // setLogging(false);
-            // navigate("/init");
-          }
-        });
-      }
-    }
-
     setInstalling(true);
 
     const storage = navigator.storage;
@@ -243,7 +219,9 @@ const Init = () => {
         {!installing && installed && !error && (
           <Box>
             <Text>App successfully setup</Text>
-            <ButtonPrimary>Go To App</ButtonPrimary>
+            <ButtonPrimary onClick={() => navigate("/jobs")}>
+              Go To App
+            </ButtonPrimary>
           </Box>
         )}
 

@@ -19,10 +19,10 @@ export const dashboardLoader: LoaderFunction = ({ request }) => {
       return redirect("/login");
     }
 
-    // const url = new URL(request.url);
-    // if (url.pathname === "/") {
-    //   return redirect("/jobs");
-    // }
+    const url = new URL(request.url);
+    if (url.pathname === "/") {
+      return redirect("/jobs");
+    }
 
     return JSON.parse(user);
   } catch (err) {

@@ -67,53 +67,29 @@ const Login = () => {
       return;
     }
 
-    // const response = await axios.post(
-    //   "/api/login",
-    //   { email, password },
-    //   {
-    //     headers: {
-    //       Accept: "application/json",
-    //       "Content-Type": "application/json",
-    //     },
-    //   }
-    // );
-
-    // if (response.status !== 200) {
-    //   toast({
-    //     title: response.data.message,
-    //     duration: 4000,
-    //     status: "error",
-    //   });
-    //   setLogging(false);
-    //   return;
-    // }
-
-    // const user = response.data;
-    // localStorage.setItem("user", JSON.stringify(user));
-
-    // if ("serviceWorker" in navigator) {
-    //   let serviceWorker: ServiceWorker;
-    //   const registration = await navigator.serviceWorker.register(
-    //     import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw",
-    //     { type: import.meta.env.MODE === "production" ? "classic" : "module" }
-    //   );
-    //   if (registration.installing) {
-    //     serviceWorker = registration.installing;
-    //   } else if (registration.waiting) {
-    //     serviceWorker = registration.waiting;
-    //   } else if (registration.active) {
-    //     serviceWorker = registration.active;
-    //   }
-    //   if (serviceWorker!) {
-    //     serviceWorker.addEventListener("statechange", (e) => {
-    //       if ((e.currentTarget as ServiceWorker).state === "activated") {
-    //         console.log("Service worker activated");
-    //         setLogging(false);
-    //         navigate("/init");
-    //       }
-    //     });
-    //   }
-    // }
+    if ("serviceWorker" in navigator) {
+      let serviceWorker: ServiceWorker;
+      const registration = await navigator.serviceWorker.register(
+        import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw",
+        { type: import.meta.env.MODE === "production" ? "classic" : "module" }
+      );
+      if (registration.installing) {
+        serviceWorker = registration.installing;
+      } else if (registration.waiting) {
+        serviceWorker = registration.waiting;
+      } else if (registration.active) {
+        serviceWorker = registration.active;
+      }
+      if (serviceWorker!) {
+        serviceWorker.addEventListener("statechange", (e) => {
+          if ((e.currentTarget as ServiceWorker).state === "activated") {
+            console.log("Service worker activated");
+            setLogging(false);
+            navigate("/init");
+          }
+        });
+      }
+    }
   };
 
   return (

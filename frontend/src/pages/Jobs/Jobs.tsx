@@ -67,7 +67,13 @@ const Jobs = () => {
                       <Text
                         px={3}
                         bg={"primary.100"}
-                        color={"orange.500"}
+                        color={
+                          job?.status === "In Progress"
+                            ? "orange.500"
+                            : job?.status === "Completed"
+                            ? "green.500"
+                            : "text.600"
+                        }
                         borderRadius={"lg"}
                       >
                         {job?.status}

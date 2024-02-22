@@ -14,6 +14,7 @@ import {
   getAllCategoriesController,
   getAllInspectionItemsByJobController,
   getJobsController,
+  getLibraryItemsController,
   getLibraryItemsIndexController,
   getNonSyncedItemsController,
   getNotesController,
@@ -148,6 +149,13 @@ registerRoute(
 registerRoute(
   ({ url }) => url.pathname === "/client/items-index",
   getLibraryItemsIndexController,
+  "GET"
+);
+
+// get library items
+registerRoute(
+  ({ url }) => url.pathname === "/client/items-library",
+  getLibraryItemsController,
   "GET"
 );
 

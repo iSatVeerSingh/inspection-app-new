@@ -8,6 +8,9 @@ export const INSPECTION_ITEM_PREVIEW = VIEW_EDIT_ITEMS + "/:id";
 export const PREVIOUS_REPORT = JOB_DETAILS + "/previous-report";
 export const PREVIOUS_ITEMS = JOB_DETAILS + "/previous-items";
 export const PREVIOUS_ITEM_PREVIEW = PREVIOUS_ITEMS + "/:id";
+
+export const ITEMS_LIBRARY = "/items-library";
+export const ITEMS_LIBRARY_PREVIEW = ITEMS_LIBRARY + "/:id";
 // export const ADD_PREVIOUS_JOB_ITEMS =
 //   JOB_DETAILS + "/add-previous-items/:prevJob";
 // export const PREVIOUS_ITEM_PREVIEW = ADD_PREVIOUS_JOB_ITEMS + "/:id";

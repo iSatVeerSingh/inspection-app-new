@@ -12,35 +12,10 @@ export default [
     path: paths.JOBS,
     name: "Jobs",
   },
-  // {
-  //   path: paths.JOBS,
-  //   name: "Jobs",
-  //   // icon: JobIcon,
-  // },
-  // {
-  //   path: paths.LIBRARY_ITEMS,
-  //   name: "Library Items",
-  //   // icon: ItemsIcon,
-  // },
-  // {
-  //   path: paths.CATEGORIES,
-  //   name: "Item Categories",
-  // },
-  // {
-  //   path: paths.INSPECTION_NOTES,
-  //   name: "Inspection Notes",
-  //   // icon: NotesIcon,
-  // },
-  // {
-  //   path: paths.USERS,
-  //   name: "Users",
-  //   // icon: UserIcon,
-  // },
-  // {
-  //   path: paths.SETTINGS,
-  //   name: "Settings",
-  //   // icon: SettingsIcon,
-  // },
+  {
+    path: paths.ITEMS_LIBRARY,
+    name: "Items Library",
+  },
   {
     path: paths.SETTINGS,
     name: "Settings",

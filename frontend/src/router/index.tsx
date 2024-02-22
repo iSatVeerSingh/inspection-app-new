@@ -6,6 +6,7 @@ import {
   ADD_NOTES,
   INSPECTION_ITEM_PREVIEW,
   ITEMS_LIBRARY,
+  ITEMS_LIBRARY_PREVIEW,
   ITEM_CATEGORIES,
   JOBS,
   JOB_CATEGORIES,
@@ -41,6 +42,7 @@ import ItemPreview from "../pages/Jobs/ItemPreview";
 import AddItemsPreviousReport from "../pages/Jobs/AddItemsPreviousReport";
 import ViewPreviousItems from "../pages/Jobs/ViewPreviousItems";
 import ItemsLibrary from "../pages/Items/ItemsLibrary";
+import LibraryItemPreview from "../pages/Items/LibraryItemPreview";
 // import {
 //   CATEGORIES,
 //   LIBRARY_ITEM,
@@ -103,6 +105,10 @@ export default createBrowserRouter([
       {
         path: ITEMS_LIBRARY,
         element: <ItemsLibrary />
+      },
+      {
+        path: ITEMS_LIBRARY_PREVIEW,
+        element: <LibraryItemPreview />
       },
       {
         path: SETTINGS,

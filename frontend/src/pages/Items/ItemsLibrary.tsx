@@ -1,7 +1,6 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Card from "../../components/Card";
 import PageLayout from "../../layout/PageLayout";
-import inspectionApi from "../../api/inspectionApi";
 import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import { Box, Button, Flex, Grid, Text, useToast } from "@chakra-ui/react";
@@ -12,7 +11,6 @@ import DataNotFound from "../../components/DataNotFound";
 import clientApi from "../../api/clientApi";
 
 const ItemsLibrary = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -135,7 +133,6 @@ const ItemsLibrary = () => {
                       >
                         {item.name}
                       </Text>
-                      <Text>Last Updated: {item.updated_at}</Text>
                     </Flex>
                     <Text
                       color={"text.600"}

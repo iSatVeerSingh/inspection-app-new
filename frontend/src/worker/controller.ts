@@ -678,6 +678,15 @@ export const getPreviousItemsController: RouteHandler = async ({ url }) => {
 
 export const getLibraryItemsController: RouteHandler = async ({ url }) => {
   try {
+    const id = url.searchParams.get('id');
+    if(id) {
+      const libraryItem = await DB.items.get(id);
+      if(!libraryItem) {
+        return getBadRequestResponse("Item not found");
+      }
+      return getSuccessResponse(libraryItem);
+    }
+
     const page = url.searchParams.get("page");
     const name = url.searchParams.get("name");
 

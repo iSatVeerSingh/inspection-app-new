@@ -148,26 +148,26 @@ const AddItems = () => {
     };
 
     parentRef.current!.innerHTML = "";
+    parentRef.current!.style.width = "475pt";
+    parentRef.current!.style.fontFamily = "Times, serif";
+    parentRef.current!.style.fontSize = "11pt";
+    parentRef.current!.style.lineHeight = "normal";
     const imgdiv = document.createElement("div");
-    imgdiv.style.display = "grid";
-    imgdiv.style.gap = "5pt";
-    imgdiv.style.gridTemplateColumns = "1fr 1fr";
+    imgdiv.style.textAlign = "center";
 
     for (let i = 0; i < resizedImages.length; i++) {
       let itemImg = resizedImages[i];
       const img = document.createElement("img");
       img.src = itemImg! as string;
-      img.style.width = "220pt";
-      img.style.height = "220pt";
+      img.style.width = "200pt";
+      img.style.height = "200pt";
       imgdiv.appendChild(img);
     }
     parentRef.current!.appendChild(imgdiv);
 
     if (inspectionItem.note && inspectionItem.note !== "") {
       const noteP = document.createElement("p");
-      noteP.style.fontFamily = "Times, serif";
-      noteP.style.fontSize = "11pt";
-      noteP.textContent = inspectionItem.note;
+      noteP.innerHTML = "Note: " + "<br>" + inspectionItem.note;
       parentRef.current!.appendChild(noteP);
     }
 
@@ -425,7 +425,7 @@ const AddItems = () => {
               visibility: "hidden",
             }}
           >
-            <div ref={parentRef} style={{ width: "470pt" }}></div>
+            <div ref={parentRef}></div>
           </div>
         </Card>
       )}

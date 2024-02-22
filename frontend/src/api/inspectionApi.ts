@@ -48,6 +48,14 @@ class InspectionApi {
       }
 
       const response = await fetch(endpoint, config);
+      if (response.headers.get("Content-Type") === "application/pdf") {
+        const pdfBlob = await response.blob();
+        return {
+          success: true,
+          error: null,
+          data: pdfBlob,
+        };
+      }
       const responseData = await response.json();
 
       if (response.status === 401) {
@@ -61,6 +69,7 @@ class InspectionApi {
       }
 
       if (!response.ok) {
+        console.log(responseData)
         return {
           success: false,
           data: null,

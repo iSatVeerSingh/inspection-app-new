@@ -160,13 +160,16 @@ export const getJobsController: RouteHandler = async ({ url }) => {
             };
           }
 
-          const inspectionItems = await DB.inspectionItems
-            .where("report_id")
-            .equals(job.report_id)
+          const newInspectionItems = await DB.inspectionItems
+            .where({ report_id: job.report_id, previousItem: 0 })
+            .count();
+          const previousInspectionItems = await DB.inspectionItems
+            .where({ report_id: job.report_id, previousItem: 1 })
             .count();
           return {
             ...job,
-            inspectionItems,
+            newInspectionItems,
+            previousInspectionItems,
           };
         }
       );
@@ -195,17 +198,19 @@ export const getJobCategoriesController: RouteHandler = async () => {
 };
 
 // Start new inspection - Update job status to "In Progress"
-export const startInspectionController: RouteHandler = async ({ url }) => {
+export const updateJobStatusController: RouteHandler = async ({
+  url,
+  request,
+}) => {
   const jobNumber = url.searchParams.get("jobNumber");
   if (!jobNumber) {
     return getBadRequestResponse();
   }
 
   try {
-    const isUpdated = await DB.jobs.update(jobNumber, {
-      status: "In Progress",
-      report_id: crypto.randomUUID(),
-    });
+    const body = await request.json();
+
+    const isUpdated = await DB.jobs.update(jobNumber, body);
     if (isUpdated === 0) {
       return getBadRequestResponse("Job Not Found");
     }
@@ -519,5 +524,154 @@ export const removeRecommendationController: RouteHandler = async ({ url }) => {
     });
   } catch (err: any) {
     return getBadRequestResponse(err?.message);
+  }
+};
+
+// non synced items
+export const getNonSyncedItemsController: RouteHandler = async ({ url }) => {
+  try {
+    const jobNumber = url.searchParams.get("jobNumber");
+    if (!jobNumber) {
+      return getBadRequestResponse();
+    }
+
+    const transaction = await DB.transaction(
+      "rw",
+      DB.jobs,
+      DB.inspectionItems,
+      DB.deletedItems,
+      async () => {
+        const job = await DB.jobs.get(jobNumber);
+        if (!job) {
+          return null;
+        }
+        const allInspectionItemsNotSynced = await DB.inspectionItems
+          .where("sync")
+          .equals(job.report_id)
+          .toArray();
+
+        const deletedItems = await DB.deletedItems.toArray();
+
+        return {
+          ...job,
+          inspectionItems: allInspectionItemsNotSynced,
+          deletedItems,
+        };
+      }
+    );
+
+    if (!transaction) {
+      return getBadRequestResponse("Job not found");
+    }
+
+    return getSuccessResponse(transaction);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+// update synced items
+export const updateSyncedItemsController: RouteHandler = async ({
+  request,
+}) => {
+  try {
+    const body = await request.json();
+
+    if (body.inspectionItems && body.inspectionItems.length > 0) {
+      await DB.inspectionItems
+        .where("id")
+        .anyOf(body.inspectionItems)
+        .modify((item: any) => {
+          item.sync = "Synced Online";
+        });
+    }
+
+    await DB.deletedItems.clear();
+    return getSuccessResponse({ message: "Items synced successfully" });
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+export const getPreviousReportController: RouteHandler = async ({ url }) => {
+  try {
+    const jobNumber = url.searchParams.get("jobNumber");
+    if (!jobNumber) {
+      return getBadRequestResponse();
+    }
+
+    const previousReport = await DB.previousReports.get(jobNumber);
+    if (!previousReport) {
+      return getBadRequestResponse("Report not found in offline database", 404);
+    }
+    return getSuccessResponse(previousReport);
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+export const setPreviousReportController: RouteHandler = async ({
+  url,
+  request,
+}) => {
+  try {
+    const jobNumber = url.searchParams.get("jobNumber");
+    if (!jobNumber) {
+      return getBadRequestResponse();
+    }
+
+    const body = await request.json();
+    if (!body) {
+      return getBadRequestResponse();
+    }
+
+    await DB.previousReports.put({ ...body, jobNumber });
+    return getSuccessResponse({
+      message: "Previous report saved to offline database",
+    });
+  } catch (err: any) {
+    return getBadRequestResponse(err?.message);
+  }
+};
+
+export const getPreviousItemIdController: RouteHandler = async ({ url }) => {
+  try {
+    const report_id = url.searchParams.get("report_id");
+    if (!report_id) {
+      return getBadRequestResponse();
+    }
+
+    const allPreviousItems = await DB.inspectionItems
+      .where({
+        report_id: report_id,
+        previousItem: 1,
+      })
+      .toArray();
+    const previousItems = allPreviousItems.map((item: any) => ({
+      id: item.id,
+      previous_item_id: item.previous_item_id,
+    }));
+    return getSuccessResponse(previousItems);
+  } catch (err: any) {
+    return getBadRequestResponse();
+  }
+};
+
+export const getPreviousItemsController: RouteHandler = async ({ url }) => {
+  try {
+    const report_id = url.searchParams.get("report_id");
+    if (!report_id) {
+      return getBadRequestResponse();
+    }
+
+    const allPreviousItems = await DB.inspectionItems
+      .where({
+        report_id: report_id,
+        previousItem: 1,
+      })
+      .toArray();
+    return getSuccessResponse(allPreviousItems);
+  } catch (err: any) {
+    return getBadRequestResponse();
   }
 };

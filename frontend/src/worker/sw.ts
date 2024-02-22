@@ -15,7 +15,11 @@ import {
   getAllInspectionItemsByJobController,
   getJobsController,
   getLibraryItemsIndexController,
+  getNonSyncedItemsController,
   getNotesController,
+  getPreviousItemIdController,
+  getPreviousItemsController,
+  getPreviousReportController,
   getRecommendationsController,
   initCategoriesController,
   initItemsController,
@@ -26,7 +30,9 @@ import {
   initSyncController,
   initUserController,
   removeRecommendationController,
-  startInspectionController,
+  setPreviousReportController,
+  updateJobStatusController,
+  updateSyncedItemsController,
 } from "./controller";
 import { DB } from "./db";
 import serverApi from "./api";
@@ -100,7 +106,7 @@ registerRoute(
 // Start new inspection
 registerRoute(
   ({ url }) => url.pathname === "/client/jobs",
-  startInspectionController,
+  updateJobStatusController,
   "PUT"
 );
 
@@ -186,6 +192,45 @@ registerRoute(
   "DELETE"
 );
 
+// get previous report and items
+registerRoute(
+  ({ url }) => url.pathname === "/client/previous-report",
+  getPreviousReportController,
+  "GET"
+);
+// set previous report and items in offline database
+registerRoute(
+  ({ url }) => url.pathname === "/client/previous-report",
+  setPreviousReportController,
+  "POST"
+);
+
+registerRoute(
+  ({ url }) => url.pathname === "/client/previous-item-id",
+  getPreviousItemIdController,
+  "GET"
+);
+
+registerRoute(
+  ({ url }) => url.pathname === "/client/previous-items",
+  getPreviousItemsController,
+  "GET"
+);
+
+// get remaining non-synced inspection items;
+registerRoute(
+  ({ url }) => url.pathname === "/client/non-synced-items",
+  getNonSyncedItemsController,
+  "GET"
+);
+
+// update synced items
+registerRoute(
+  ({ url }) => url.pathname === "/client/non-synced-items",
+  updateSyncedItemsController,
+  "PUT"
+);
+
 const syncJobandInspectionItems = async () => {
   try {
     console.log("sync function run", new Date());
@@ -205,6 +250,9 @@ const syncJobandInspectionItems = async () => {
     // }
 
     const job = await DB.jobs.where("status").equals("In Progress").first();
+    if (!job) {
+      return;
+    }
 
     // for (let i = 0; i < inProgressJobs.length; i++) {
 
@@ -253,7 +301,7 @@ const syncJobandInspectionItems = async () => {
 
     // console.log(itemsTosync);
     // }
-    await DB.sync.put({ lastSync: currentTime, type: "sync" }, "sync");
+    await DB.sync.update("sync", { lastSync: currentTime });
   } catch (err: any) {
     console.log(err);
   }

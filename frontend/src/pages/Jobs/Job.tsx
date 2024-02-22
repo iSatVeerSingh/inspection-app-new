@@ -1,9 +1,15 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Card from "../../components/Card";
 import PageLayout from "../../layout/PageLayout";
 import { useEffect, useRef, useState } from "react";
 import clientApi from "../../api/clientApi";
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Flex,
   Grid,
@@ -24,8 +30,7 @@ import DataNotFound from "../../components/DataNotFound";
 import ButtonPrimary from "../../components/ButtonPrimary";
 import DatalistInput from "../../components/DatalistInput";
 import ButtonOutline from "../../components/ButtonOutline";
-import serverApi from "../../worker/api";
-import { DB } from "../../worker/db";
+import inspectionApi, { inspectionApiAxios } from "../../api/inspectionApi";
 // reports@correctinspections.com.au
 
 const Job = () => {
@@ -35,7 +40,14 @@ const Job = () => {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const toast = useToast();
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
   const { onOpen, onClose, isOpen } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const {
+    isOpen: isOpenAlert,
+    onOpen: onOpenAlert,
+    onClose: onCloseAlert,
+  } = useDisclosure();
   const recommendationRef = useRef<HTMLInputElement>(null);
 
   const getJob = async () => {
@@ -64,7 +76,10 @@ const Job = () => {
   const startInspection = async () => {
     const { success, error } = await clientApi.put(
       `/jobs?jobNumber=${jobNumber}`,
-      null
+      {
+        status: "In Progress",
+        report_id: crypto.randomUUID(),
+      }
     );
     if (!success) {
       toast({
@@ -127,6 +142,88 @@ const Job = () => {
     await getJob();
   };
 
+  const submitReport = async () => {
+    setSubmitting(true);
+    const nonSyncedItemsResponse = await clientApi.get(
+      `/non-synced-items?jobNumber=${jobNumber}`
+    );
+    if (!nonSyncedItemsResponse.success) {
+      toast({
+        title: nonSyncedItemsResponse.error,
+        duration: 4000,
+        status: "error",
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    const data = nonSyncedItemsResponse.data;
+    if (data.inspectionItems.length > 0 || data.deletedItems.length > 0) {
+      let syncResponse = await inspectionApiAxios.post(
+        "/sync-inspection-items",
+        {
+          job_id: data.id,
+          report_id: data.report_id,
+          deletedItems: data.deletedItems,
+          inspectionItems: data.inspectionItems,
+        }
+      );
+
+      if (syncResponse.status < 200 || syncResponse.status > 299) {
+        toast({
+          title: syncResponse.data.message,
+          status: "error",
+          duration: 4000,
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      const { success, error } = await clientApi.put("/non-synced-items", {
+        inspectionItems: syncResponse.data,
+      });
+
+      if (!success) {
+        toast({
+          title: error,
+          status: "error",
+          duration: 4000,
+        });
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    console.log("start", new Date());
+
+    const finishResponse = await inspectionApi.post("/finish-report", {
+      job_id: data.id,
+      report_id: data.report_id,
+      inspectionNotes: data.inspectionNotes,
+      recommendation: data.recommendation || null,
+    });
+
+    if (!finishResponse.success) {
+      toast({
+        title: finishResponse.error,
+        status: "error",
+        duration: 4000,
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    const response = await clientApi.put(`/jobs?jobNumber=${jobNumber}`, {
+      status: "Completed",
+      completedAt: finishResponse.data.completedAt,
+    });
+    if (!response.success) {
+      return;
+    }
+    setSubmitting(false);
+    await getJob();
+  };
+
   return (
     <PageLayout title="Job Details">
       {loading ? (
@@ -164,6 +261,12 @@ const Job = () => {
                       Customer Email
                     </Text>
                     <Text color={"text.600"}>{job?.customer?.email}</Text>
+                  </Flex>
+                  <Flex alignItems={"center"}>
+                    <Text fontSize={"lg"} color={"text.700"} minW={"200px"}>
+                      Site Address
+                    </Text>
+                    <Text color={"text.600"}>{job?.siteAddress}</Text>
                   </Flex>
                   <Flex alignItems={"center"}>
                     <Text fontSize={"lg"} color={"text.700"} minW={"200px"}>
@@ -231,11 +334,43 @@ const Job = () => {
                         </ButtonOutline>
                       </Flex>
                     </Box>
-                    <Box>
+                    <Box mt={3}>
+                      <Heading as="h3" fontSize={"xl"} color={"text.700"}>
+                        Add items from previous report
+                      </Heading>
+                      <Flex alignItems={"center"} gap={2}>
+                        <Text fontSize={"lg"} minW={"200px"}>
+                          Total items from previous report
+                        </Text>
+                        <Text
+                          color={"text.600"}
+                          bg={"primary.50"}
+                          px={2}
+                          borderRadius={"md"}
+                        >
+                          {job?.previousInspectionItems}
+                        </Text>
+                      </Flex>
+                      <Flex mt={2} alignItems={"center"} gap={2}>
+                        <ButtonPrimary
+                          minW={"200px"}
+                          onClick={() => navigate("./previous-report")}
+                        >
+                          Add Items
+                        </ButtonPrimary>
+                        <ButtonOutline
+                          minW={"200px"}
+                          onClick={() => navigate("./previous-items")}
+                        >
+                          View Items
+                        </ButtonOutline>
+                      </Flex>
+                    </Box>
+                    <Box mt={3}>
                       <Heading as="h3" fontSize={"xl"} color={"text.700"}>
                         Add New Inspection Items
                       </Heading>
-                      <Flex alignItems={"center"} gap={2} mt={2}>
+                      <Flex alignItems={"center"} gap={2}>
                         <Text fontSize={"lg"} minW={"200px"}>
                           Total items from current report
                         </Text>
@@ -245,7 +380,7 @@ const Job = () => {
                           px={2}
                           borderRadius={"md"}
                         >
-                          {job?.inspectionItems}
+                          {job?.newInspectionItems}
                         </Text>
                       </Flex>
                       <Flex mt={2} alignItems={"center"} gap={2}>
@@ -283,6 +418,11 @@ const Job = () => {
                         </Box>
                       )}
                     </Box>
+                    <Box mt={2}>
+                      <ButtonPrimary onClick={onOpenAlert}>
+                        Finish Report
+                      </ButtonPrimary>
+                    </Box>
                   </>
                 )}
               </Card>
@@ -318,6 +458,71 @@ const Job = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <AlertDialog
+        isOpen={isOpenAlert}
+        leastDestructiveRef={cancelRef}
+        onClose={onCloseAlert}
+        closeOnOverlayClick={false}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            {job?.status === "Completed" ? (
+              <>
+                <AlertDialogHeader fontSize={"lg"} fontWeight={"bold"}>
+                  Report Success
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                  <Text>
+                    You can view the pdf report by visiting this link.
+                  </Text>
+                  <a
+                    href={`https://${location.hostname}/api/report/${job?.report_id}/${job?.type} - Inspection Report - ${job?.customer.nameOnReport}.pdf`}
+                    target="_blank"
+                    style={{ textDecoration: "underline", color: "blue" }}
+                  >
+                    Click to view pdf
+                  </a>
+                </AlertDialogBody>
+                <AlertDialogFooter gap={3}>
+                  <ButtonOutline
+                    ref={cancelRef}
+                    isDisabled={submitting}
+                    onClick={onCloseAlert}
+                  >
+                    Close
+                  </ButtonOutline>
+                </AlertDialogFooter>
+              </>
+            ) : (
+              <>
+                <AlertDialogHeader fontSize={"lg"} fontWeight={"bold"}>
+                  Finish Report
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                  Are you sure? Please review the report once before submitting.
+                </AlertDialogBody>
+                <AlertDialogFooter gap={3}>
+                  <ButtonOutline
+                    ref={cancelRef}
+                    isDisabled={submitting}
+                    onClick={onCloseAlert}
+                  >
+                    Cancel and Review
+                  </ButtonOutline>
+                  <ButtonPrimary
+                    isLoading={submitting}
+                    loadingText="Submitting"
+                    onClick={submitReport}
+                  >
+                    Submit Report
+                  </ButtonPrimary>
+                </AlertDialogFooter>
+              </>
+            )}
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </PageLayout>
   );
 };

@@ -173,7 +173,7 @@ const Init = () => {
     }
 
     setStatus("Fetching initial jobs");
-    response = await inspectionApiAxios.get("/install-jobs", {
+    response = await inspectionApiAxios.get("/sync-jobs", {
       onDownloadProgress(e) {
         const downloadpr = Math.floor(e.progress! * 100);
         setProgress(downloadpr);

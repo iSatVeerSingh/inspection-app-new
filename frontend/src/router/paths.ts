@@ -5,6 +5,9 @@ export const VIEW_EDIT_NOTES = JOB_DETAILS + "/all-notes";
 export const ADD_ITEMS = JOB_DETAILS + "/add-items";
 export const VIEW_EDIT_ITEMS = JOB_DETAILS + "/all-items";
 export const INSPECTION_ITEM_PREVIEW = VIEW_EDIT_ITEMS + "/:id";
+export const PREVIOUS_REPORT = JOB_DETAILS + "/previous-report";
+export const PREVIOUS_ITEMS = JOB_DETAILS + "/previous-items";
+export const PREVIOUS_ITEM_PREVIEW = PREVIOUS_ITEMS + "/:id";
 // export const ADD_PREVIOUS_JOB_ITEMS =
 //   JOB_DETAILS + "/add-previous-items/:prevJob";
 // export const PREVIOUS_ITEM_PREVIEW = ADD_PREVIOUS_JOB_ITEMS + "/:id";

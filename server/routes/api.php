@@ -11,11 +11,21 @@ use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureUserIsOwner;
 use App\Http\Middleware\EnsureUserIsOwnerOrAdmin;
+use App\Http\Resources\InspectorItemSummaryResource;
+use App\Http\Resources\InspectorNoteResource;
+use App\Http\Resources\ItemCollection;
+use App\Mail\ReportCompleted;
 use App\Models\InspectionItem;
+use App\Models\Item;
+use App\Models\ItemCategory;
 use App\Models\Job;
+use App\Models\JobCategory;
+use App\Models\Note;
+use App\Models\Recommendation;
 use App\Models\Report;
 use App\Utils\ReportPdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -61,125 +71,37 @@ Route::middleware('auth:sanctum')->group(function () {
 
   Route::post('/sync-inspection-items', [JobController::class, 'syncInspectionItems']);
   Route::get('/sync-jobs', [JobController::class, 'syncJobs']);
+  Route::get('/sync-library', [ItemController::class, 'syncLibrary']);
   Route::post('/finish-report', [JobController::class, 'finishReport']);
+  Route::put('/jobs', [JobController::class, 'updateJob']);
   Route::get('/previous-report/{customerId}', [JobController::class, 'previousJobByCustomer']);
 });
 
 Route::get('/report/{reportId}/{pdfname}', [JobController::class, 'getReportPdf']);
 
-Route::get('/demo', function () {
-  $report = Report::find('02f8b309-331f-4a03-9099-043c5f7da2bb');
-  $currentJob = Job::find('0942e4fe-d55a-41bd-8cbb-20fda2d6d2db');
-  $pdf = new ReportPdf("P", 'pt');
-  $pdf->MakePdf($currentJob, $report);
-  $pdf->Output();
+Route::get('/demo', function (Request $request) {
 
-  $inspectionItems = $report->inspectionItems->map(function (InspectionItem $inspectionItem) {
-    if (!$inspectionItem['library_item_id']) {
-      $inspectionItem['totalHeight'] = $inspectionItem['height'];
-      return $inspectionItem;
-    }
-    $libItem = $inspectionItem->libraryItem;
-    $totalHeight = $inspectionItem['height'] + $libItem['height'];
-    $inspectionItem['library_item'] = $libItem;
-    $inspectionItem['totalHeight'] = $totalHeight;
-    if ($inspectionItem['previousItem']) {
-      $prevItem = $inspectionItem->prevReportItem;
-      $allImages = [];
-      array_push($allImages, ...$inspectionItem['images'], ...$prevItem['images']);
-      $inspectionItem['images'] = $allImages;
-    }
-    return $inspectionItem;
-  })->all();
 
-  $previousItems = [];
-  $newItems = [];
-
-  foreach ($inspectionItems as $insItem) {
-    if ($insItem['previousItem']) {
-      array_push($previousItems, $insItem);
-    } else {
-      array_push($newItems, $insItem);
-    }
+  if (!$request->has('lastSync')) {
+    return response()->json(['message' => 'Invalid request'], 400);
   }
+  $lastSync = $request->lastSync;
+  $items = Item::where('updated_at', '>=', $lastSync)->get();
+  $libraryItems = InspectorItemSummaryResource::collection($items);
 
-  usort($previousItems, function ($a, $b) {
-    return $b->totalHeight - $a->totalHeight;
-  });
-  // usort($newitems, function ($a, $b) {
-  //   return $b->totalHeight - $a->totalHeight;
-  // });
+  $itemCategories = ItemCategory::where('updated_at', '>=', $lastSync)->select('id', 'name')->get();
+  $notes = Note::where('updated_at', '>=', $lastSync)->get();
+  $notesCollection = InspectorNoteResource::collection($notes);
 
-  $maxContentHeight = 745;
+  $recommendations = Recommendation::where('updated_at', '>=', $lastSync)->select('id', 'text')->get();
 
-  $finalPrevious = [];
+  $jobCategories = JobCategory::where('updated_at', '>=', $lastSync)->select('id', 'name')->get();
 
-  for ($i = 0; $i < count($previousItems); $i++) {
-    $itemA = $previousItems[$i];
-
-    $isAExist = array_search($itemA['id'], array_column($finalPrevious, 'id'));
-    if ($isAExist) {
-      continue;
-    }
-
-    $itemA['pageBreak'] = true;
-    array_push($finalPrevious, [
-      'id' => $itemA['id'],
-      'totalHeight' => $itemA['totalHeight'],
-      'pageBreak' => $itemA['pageBreak'],
-      'name' => $itemA['name'],
-    ]);
-
-    if (count($itemA['images']) > 8) {
-      continue;
-    }
-
-    if ($itemA['totalHeight'] > 600 && $itemA['totalHeight'] <= $maxContentHeight) {
-      continue;
-    }
-
-    if ($i === count($previousItems) - 1) {
-      break;
-    }
-
-    $remainingSpace = 750;
-    if ($maxContentHeight >= $itemA['totalHeight']) {
-      $remainingSpace = $maxContentHeight - $itemA['totalHeight'];
-    } else {
-      $remainingSpace = 2 * $maxContentHeight - $itemA['totalHeight'];
-    }
-
-    $secondItem = null;
-    $diff = $remainingSpace;
-
-    for ($j = $i + 1; $j < count($previousItems); $j++) {
-      $itemB = $previousItems[$j];
-
-      $isBExist = array_search($itemB['id'], array_column($finalPrevious, 'id'));
-      if ($isBExist) {
-        continue;
-      }
-
-      if ($itemB['totalHeight'] < $remainingSpace && $remainingSpace - $itemB['totalHeight'] < $diff) {
-        $secondItem = $itemB;
-        $diff = $remainingSpace - $itemB['totalHeight'];
-      }
-    }
-
-    if ($secondItem) {
-      $secondItem['pageBreak'] = false;
-      array_push($finalPrevious, [
-        'id' => $secondItem['id'],
-        'totalHeight' => $secondItem['totalHeight'],
-        'pageBreak' => $secondItem['pageBreak'],
-        'name' => $secondItem['name']
-      ]);
-    }
-  }
-
-  $lastItem = array_pop($finalPrevious);
-  $lastItem['pageBreak'] = false;
-  array_unshift($finalPrevious, $lastItem);
-
-  return $finalPrevious;
+  return [
+    'items' => $libraryItems,
+    'categories' => $itemCategories,
+    'notes' => $notesCollection,
+    'recommendations' => $recommendations,
+    'jobCategories' => $jobCategories
+  ];
 });

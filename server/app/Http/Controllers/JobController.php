@@ -36,7 +36,10 @@ class JobController extends Controller
 
     public function previousJobByCustomer(Request $request, string $customerId)
     {
-        $report = Report::where('customer_id', $customerId)->select()->orderBy('updated_at', 'desc')->first();
+        $report = Report::where('customer_id', $customerId)->whereNotNull('completedAt')->orderBy('updated_at', 'desc')->first();
+        if (!$report) {
+            return response()->json(['message' => 'No report found for this customer'], Response::HTTP_NOT_FOUND);
+        }
         $inspectionItems = InspectionItemLibraryResource::collection($report->inspectionItems)->toArray($request);
 
         $reportData = [
@@ -131,6 +134,30 @@ class JobController extends Controller
         }
 
         return response()->json($createdInspectionItems, Response::HTTP_CREATED);
+    }
+
+    public function updateJob(Request $request)
+    {
+        $data = $request->all();
+
+        $jobId = $data['job_id'];
+        $reportId = $data['report_id'];
+        $currentJob = Job::find($jobId);
+
+        $currentJob->update(['status' => 'In Progress']);
+
+        $report = Report::find($reportId);
+
+        if (!$report) {
+            $report = new Report([
+                'id' => $reportId,
+                'job_id' => $jobId,
+                'customer_id' => $currentJob->customer->id
+            ]);
+
+            $report->save();
+        }
+        return response()->json(['message' => 'Job updated successfully']);
     }
 
     public function finishReport(Request $request)

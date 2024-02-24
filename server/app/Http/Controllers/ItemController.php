@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\FullItemResource;
 use App\Http\Resources\InspectorItemSummaryResource;
+use App\Http\Resources\InspectorNoteResource;
 use App\Http\Resources\ItemCollection;
 use App\Http\Resources\ItemResource;
 use App\Mail\ItemSuggestion;
 use App\Models\Item;
+use App\Models\ItemCategory;
+use App\Models\JobCategory;
+use App\Models\Note;
+use App\Models\Recommendation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -106,5 +111,31 @@ class ItemController extends Controller
         }
 
         return response()->json(['message' => 'Suggestion sent successfully']);
+    }
+
+    public function syncLibrary(Request $request)
+    {
+        if (!$request->has('lastSync')) {
+            return response()->json(['message' => 'Invalid request'], 400);
+        }
+        $lastSync = $request->lastSync;
+        $items = Item::where('updated_at', '>=', $lastSync)->get();
+        $libraryItems = InspectorItemSummaryResource::collection($items);
+
+        $itemCategories = ItemCategory::where('updated_at', '>=', $lastSync)->select('id', 'name')->get();
+        $notes = Note::where('updated_at', '>=', $lastSync)->get();
+        $notesCollection = InspectorNoteResource::collection($notes);
+
+        $recommendations = Recommendation::where('updated_at', '>=', $lastSync)->select('id', 'text')->get();
+
+        $jobCategories = JobCategory::where('updated_at', '>=', $lastSync)->select('id', 'name')->get();
+
+        return [
+            'items' => $libraryItems,
+            'categories' => $itemCategories,
+            'notes' => $notesCollection,
+            'recommendations' => $recommendations,
+            'jobCategories' => $jobCategories
+        ];
     }
 }

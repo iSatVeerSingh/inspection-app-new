@@ -203,9 +203,9 @@ class ReportPdf extends TCPDF
       $summary = '<p>' . $previousCount . ' items added from previous report.</p>' . $summary;
     }
 
-    $summary = $summary . '<p> Total ' . $previousCount + $newCount . ' items added in this report.</p>';
+    $summary = $summary . '<p>Total ' . $previousCount + $newCount . ' items added in this report.</p>';
     if ($recommendation) {
-      $summary = $summary . '<p> Recommendation by inspector: ' . $recommendation . '</p>';
+      $summary = $summary . '<p>Recommendation by inspector: ' . $recommendation . '</p>';
     }
     $this->writeHTML($summary, false, false, true);;
     $this->Ln(10);
@@ -487,7 +487,7 @@ class ReportPdf extends TCPDF
     foreach ($finalNew as $index => $inspectionItem) {
       $itemContent = "";
       $name = '<p style="font-weight: bold;">' . $inspectionItem['name'] . "</p>";
-
+      //. "////" . $inspectionItem['totalHeight'] . 
       $itemContent = $itemContent . $name;
 
       $openingParagraph = "";

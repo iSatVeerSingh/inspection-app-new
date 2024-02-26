@@ -119,12 +119,31 @@ const ItemPreview = () => {
               {inspectionItem.images && inspectionItem.images.length !== 0 && (
                 <>
                   <Text fontSize={"lg"} color={"text.700"} minW={"200px"}>
-                    Images
+                    New Images
                   </Text>
-                  <Grid gridTemplateColumns={"1fr 1fr 1fr"} gap={2}>
+                  <Grid gridTemplateColumns={"1fr 1fr 1fr"} gap={2} maxW={"700px"}>
                     {inspectionItem.images.map((img: any, index: any) => (
                       <Image src={img} w={"200px"} maxH={"300px"} key={index} />
                     ))}
+                  </Grid>
+                </>
+              )}
+              {inspectionItem.previousItemImages && (
+                <>
+                  <Text fontSize={"lg"} color={"text.700"} minW={"200px"}>
+                    Previous Images
+                  </Text>
+                  <Grid gridTemplateColumns={"1fr 1fr 1fr"} gap={2}>
+                    {inspectionItem.previousItemImages.map(
+                      (img: any, index: any) => (
+                        <Image
+                          src={img}
+                          w={"200px"}
+                          maxH={"300px"}
+                          key={index}
+                        />
+                      )
+                    )}
                   </Grid>
                 </>
               )}

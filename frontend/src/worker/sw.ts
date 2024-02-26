@@ -253,9 +253,9 @@ const syncJobandInspectionItems = async () => {
     }
 
     const currentTime = Date.now();
-    // if (currentTime - sync.lastSync < 120000) {
-    //   return;
-    // }
+    if (currentTime - sync.lastSync < 540000) {
+      return;
+    }
 
     const job = await DB.jobs.where("status").equals("In Progress").first();
     if (!job) {
@@ -315,9 +315,96 @@ const syncJobandInspectionItems = async () => {
   }
 };
 
+const syncLibrary = async () => {
+  try {
+    console.log("sync library func run now", new Date());
+    if (!navigator.onLine) {
+      return;
+    }
+
+    const sync = await DB.sync.get("sync");
+    if (!sync) {
+      console.log("not sync");
+      return;
+    }
+
+    const lastSyncLibrary = sync.lastSyncLibrary;
+    const currentTime = Date.now();
+
+    if (currentTime - lastSyncLibrary < 540000) {
+      return;
+    }
+
+    let date = new Date(lastSyncLibrary);
+
+    let hours = date.getHours();
+    let ampm = hours >= 12 ? "PM" : "AM";
+
+    // Convert hours to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be displayed as 12 in 12-hour format
+
+    let formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${hours
+      .toString()
+      .padStart(2, "0")}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")} ${ampm}`;
+
+    const { success, data, error } = await serverApi.get(
+      `/sync-library?lastSync=${formattedDate}`
+    );
+    if (!success) {
+      console.log(error);
+      return;
+    }
+
+    data.items.forEach(async (item: any) => {
+      await DB.items.put(item);
+    });
+    data.categories.forEach(async (item: any) => {
+      await DB.categories.put(item);
+    });
+    data.jobCategories.forEach(async (item: any) => {
+      await DB.jobCategories.put(item);
+    });
+    data.notes.forEach(async (item: any) => {
+      await DB.notes.put(item);
+    });
+    data.recommendations.forEach(async (item: any) => {
+      await DB.recommendations.put(item);
+    });
+
+    await DB.sync.update("sync", { lastSyncLibrary: currentTime });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const syncJobs = async () => {
+  try {
+    console.log("sync jobs run on ", new Date());
+    const { success, error, data } = await serverApi.get("/sync-jobs");
+    if (!success) {
+      console.log(error);
+      return;
+    }
+
+    await DB.jobs.where("status").equals("Not Started").delete();
+
+    await DB.jobs.bulkPut(data);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 setInterval(() => {
   syncJobandInspectionItems();
-}, 1000 * 60 * 3);
+  syncLibrary();
+  syncJobs();
+}, 1000 * 60 * 10);
 
 let allowlist: undefined | RegExp[];
 if (import.meta.env.DEV) allowlist = [/^\/$/];

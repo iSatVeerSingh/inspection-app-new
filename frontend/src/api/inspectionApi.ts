@@ -69,7 +69,7 @@ class InspectionApi {
       }
 
       if (!response.ok) {
-        console.log(responseData)
+        console.log(responseData);
         return {
           success: false,
           data: null,
@@ -144,7 +144,9 @@ inspectionApiAxios.interceptors.response.use(
     if (error.code === "ERR_NETWORK") {
       return {
         data: {
-          message: error.message || "No Internet Connection. You are offline",
+          message:
+            error.response.data.message ||
+            "No Internet Connection. You are offline",
         },
       };
     }
@@ -156,7 +158,7 @@ inspectionApiAxios.interceptors.response.use(
 
     return {
       data: {
-        message: error.message,
+        message: error.response.data.message,
       },
     };
   }

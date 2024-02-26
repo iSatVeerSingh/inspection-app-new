@@ -113,6 +113,7 @@ export const initSyncController: RouteHandler = async () => {
     await DB.sync.add({
       type: "sync",
       lastSync: Date.now(),
+      lastSyncLibrary: Date.now(),
     });
     return getSuccessResponse({ message: "Sync successfully setup" });
   } catch (err: any) {
@@ -333,8 +334,14 @@ export const getLibraryItemsIndexController: RouteHandler = async () => {
 // add inspection items
 export const addInspectionItemsController: RouteHandler = async ({
   request,
+  url,
 }) => {
   try {
+    const jobNumber = url.searchParams.get("jobNumber");
+
+    if (jobNumber) {
+      await DB.jobs.update(jobNumber, { status: "In Progress" });
+    }
     const body = await request.json();
 
     const id = await DB.inspectionItems.add(body);
@@ -678,10 +685,10 @@ export const getPreviousItemsController: RouteHandler = async ({ url }) => {
 
 export const getLibraryItemsController: RouteHandler = async ({ url }) => {
   try {
-    const id = url.searchParams.get('id');
-    if(id) {
+    const id = url.searchParams.get("id");
+    if (id) {
       const libraryItem = await DB.items.get(id);
-      if(!libraryItem) {
+      if (!libraryItem) {
         return getBadRequestResponse("Item not found");
       }
       return getSuccessResponse(libraryItem);

@@ -180,10 +180,14 @@ const AddItems = () => {
       inspectionItem.height = height + 130;
     }
 
-    const { success, data, error } = await clientApi.post(
-      "/jobs/inspection-items",
-      inspectionItem
-    );
+    let url = "/jobs/inspection-items";
+
+    if (job.status === "Completed") {
+      url = url + "?jobNumber=" + jobNumber;
+      console.log('hell')
+    }
+
+    const { success, data, error } = await clientApi.post(url, inspectionItem);
     if (!success) {
       toast({
         title: error,
@@ -321,10 +325,14 @@ const AddItems = () => {
       inspectionItem.height = height + 130;
     }
 
-    const { success, data, error } = await clientApi.post(
-      "/jobs/inspection-items",
-      inspectionItem
-    );
+    let url = "/jobs/inspection-items";
+
+    if (job.status === "Completed") {
+      url = url + "?jobNumber=" + jobNumber;
+      console.log('helo')
+    }
+
+    const { success, data, error } = await clientApi.post(url, inspectionItem);
     if (!success) {
       toast({
         title: error,

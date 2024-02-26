@@ -78,11 +78,13 @@ const Job = () => {
   }, []);
 
   const startInspection = async () => {
+    const report_id = crypto.randomUUID();
+
     const { success, error } = await clientApi.put(
       `/jobs?jobNumber=${jobNumber}`,
       {
         status: "In Progress",
-        report_id: crypto.randomUUID(),
+        report_id: report_id,
       }
     );
     if (!success) {
@@ -93,6 +95,10 @@ const Job = () => {
       });
       return;
     }
+    await inspectionApi.put("/jobs", {
+      job_id: job.id,
+      report_id,
+    });
     await getJob();
   };
 

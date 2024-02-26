@@ -102,6 +102,7 @@ const AddItemsPreviousReport = () => {
             },
           }
         );
+        console.log(previousResponse);
         if (previousResponse.status !== 200) {
           toast({
             title: previousResponse.data.message,
@@ -125,7 +126,7 @@ const AddItemsPreviousReport = () => {
         return;
       }
       setPreviousReport(response.data);
-      setFilteredItems(response.data.inspectionItems)
+      setFilteredItems(response.data.inspectionItems);
 
       await getPreviousItemsIds(jobdata.report_id);
     })();
@@ -199,10 +200,13 @@ const AddItemsPreviousReport = () => {
       }
     }
 
-    const { success, data, error } = await clientApi.post(
-      "/jobs/inspection-items",
-      inspectionItem
-    );
+    let url = "/jobs/inspection-items";
+
+    if (job.status === "Completed") {
+      url = url + "?jobNumber=" + jobNumber;
+    }
+
+    const { success, data, error } = await clientApi.post(url, inspectionItem);
     if (!success) {
       toast({
         title: error,
@@ -233,6 +237,7 @@ const AddItemsPreviousReport = () => {
     if (!inspectionItem) {
       return;
     }
+
     const { success, data, error } = await clientApi.delete(
       `/jobs/inspection-items?id=${inspectionItem?.id}`
     );

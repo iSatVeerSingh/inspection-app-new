@@ -14,14 +14,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use TCPDF;
 
 class JobController extends Controller
 {
-    public function index(Request $request)
-    {
-    }
-
     public function syncJobs(Request $request)
     {
         $jobs = Job::where('inspector_id', Auth::id())
